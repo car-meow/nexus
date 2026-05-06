@@ -205,6 +205,7 @@
                 <button id="bookmark-btn" style="background: red; border: none; border-radius: 8px; padding: 5px; cursor: pointer; display: flex; align-items: center; justify-content: center; width: 45px; height: 45px; flex-shrink: 0; transition: background 0.2s, transform 0.2s;">
                     <img src="bookmark.png" style="width: 100%; height: 100%; object-fit: contain; border-radius: 4px; pointer-events: none;">
                 </button>
+                <span id="bookmark-hint" style="color: #4CAF50; font-weight: bold; display: none; margin-left: 5px; white-space: nowrap;">Click a game to bookmark</span>
                 <script src="https://cdn.jsdelivr.net/gh/bubbls/ugs-singlefile@main/searchbut.js"></script>
                 <button id="lolbutton"
                     onclick="const script = document.createElement('script');script.src = 'https://cdn.jsdelivr.net/gh/bubbls/ugs-singlefile@latest/game.js';document.body.appendChild(script);"
@@ -236,9 +237,11 @@
             if (isBookmarkMode) {
                 bookmarkBtn.style.background = '#4CAF50'; // Turn green
                 document.body.classList.add('bookmark-mode-active');
+                document.getElementById('bookmark-hint').style.display = 'inline';
             } else {
                 bookmarkBtn.style.background = 'red'; // Turn back to normal red
                 document.body.classList.remove('bookmark-mode-active');
+                document.getElementById('bookmark-hint').style.display = 'none';
             }
         });
 
@@ -249,7 +252,16 @@
                 e.stopPropagation();
                 
                 selectedFile = e.target.value;
-                document.getElementById('bookmark-app-name').value = selectedFile;
+                let displayName = selectedFile;
+                if (displayName.toLowerCase().startsWith("cl")) {
+                    displayName = displayName.substring(2);
+                }
+                
+                if (displayName.toLowerCase().endsWith(".html")) {
+                    displayName = displayName.substring(0, displayName.length - 5);
+                }
+                
+                document.getElementById('bookmark-app-name').value = displayName;
                 document.getElementById('bookmark-overlay').style.display = 'flex';
                 document.getElementById('bookmark-app-name').focus();
             }
@@ -267,6 +279,7 @@
                     isBookmarkMode = false;
                     bookmarkBtn.style.background = 'red';
                     document.body.classList.remove('bookmark-mode-active');
+                    document.getElementById('bookmark-hint').style.display = 'none';
                 }
             }
         });

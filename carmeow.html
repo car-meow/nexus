@@ -9,7 +9,7 @@
     <header>
         <h1 onclick="location.href='index.html'">Toothbrush Games</h1>
         <nav class="top-nav">
-            <!-- Removed the stash list button since you use the PDF version -->
+            <button id="custom-app-btn" class="save-btn" style="background-color: #2196F3;">Custom</button>
         </nav>
 		
 		<!-- Put this directly under </nav> and above <div class="controls"> -->
@@ -36,12 +36,6 @@
     <main>
         <aside class="sidebar">
             <ul id="game-list"></ul>
-            <div class="add-game">
-                <h3>Add Local App</h3>
-                <input type="text" id="new-game-title" placeholder="App Title">
-                <input type="file" id="new-game-file" accept=".html">
-                <button id="add-game-btn" class="save-btn" style="background-color:#2196F3; width:100%; margin-top:10px;">Add App</button>
-            </div>
         </aside>
         <section class="game-container">
             <!-- The Zigzag Empty State -->
@@ -54,7 +48,37 @@
             <iframe id="game-frame" name="game-frame" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals allow-pointer-lock" allow="allow-storage-access-by-user-activation; storage-access; fullscreen"></iframe>
         </section>
     </main>
+    <!-- Custom App Overlay -->
+    <div id="custom-app-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.88); z-index: 30000; align-items: center; justify-content: center;">
+        <div style="background: #1f1f1f; padding: 28px; border-radius: 16px; width: 440px; max-width: 90vw; border: 2px solid #2196F3; text-align: center; box-shadow: 0 0 40px rgba(0,0,0,0.9); font-family: Arial, sans-serif;">
+            <h2 style="color: #2196F3; margin-top: 0; margin-bottom: 12px; font-size: 24px;">Add Local App</h2>
+            <input type="text" id="new-game-title" placeholder="App Title" style="width: 100%; padding: 12px; margin-bottom: 18px; box-sizing: border-box; border-radius: 8px; border: 1px solid #444; background: #333; color: white; font-size: 16px;">
+            <input type="file" id="new-game-file" accept=".html" style="width: 100%; margin-bottom: 18px; color: white; background: #333; padding: 10px; border-radius: 8px; border: 1px solid #444;">
+            <button id="add-game-btn" style="background: #4CAF50; color: white; border: none; padding: 12px; border-radius: 8px; width: 100%; font-size: 16px; font-weight: bold; cursor: pointer; transition: filter 0.2s;">Add App</button>
+        </div>
+    </div>
+
     <script src="app.js"></script>
-	
+    <script>
+        document.getElementById('custom-app-btn').addEventListener('click', () => {
+            document.getElementById('custom-app-overlay').style.display = 'flex';
+        });
+
+        document.getElementById('add-game-btn').addEventListener('click', () => {
+            setTimeout(() => {
+                if (document.getElementById('new-game-title').value && document.getElementById('new-game-file').files.length > 0) {
+                    document.getElementById('custom-app-overlay').style.display = 'none';
+                    document.getElementById('new-game-title').value = '';
+                    document.getElementById('new-game-file').value = '';
+                }
+            }, 50);
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && document.getElementById('custom-app-overlay').style.display === 'flex') {
+                document.getElementById('custom-app-overlay').style.display = 'none';
+            }
+        });
+    </script>
 </body>
 </html>
