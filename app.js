@@ -34,8 +34,11 @@ function renderGameList() {
         if (game.id === "ugs-stash") li.classList.add('ugs-item');
         
         const t = document.createElement('span');
-        t.textContent = game.title; t.style.flex = "1";
-        t.onclick = () => loadGame(game);
+        t.textContent = game.title; 
+        t.style.flex = "1";
+        t.style.pointerEvents = "none"; // Make sure span clicks pass through to li
+        
+        li.onclick = () => loadGame(game);
         li.appendChild(t);
         if (game.id.toString().startsWith('custom_')) {
             const del = document.createElement('span');
