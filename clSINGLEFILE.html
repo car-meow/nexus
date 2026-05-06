@@ -289,56 +289,39 @@
             const encoded = encodeURIComponent(normalized);
             const gameUrl = `https://cdn.jsdelivr.net/gh/bubbls/ugs-singlefile/UGS-Files/${encoded}?t=${Date.now()}`;
 
-            try {
-                // Fetch the game's actual HTML
-                const response = await fetch(gameUrl);
-                if (!response.ok) throw new Error("Fetch failed");
-                const text = await response.text();
-                
-                // Convert text into a Data URL
-                const blob = new Blob([text], {type: 'text/html'});
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const dataUrl = e.target.result;
-                    const newG = { id: 'custom_' + Date.now(), title: title, type: 'file', content: dataUrl };
+            const newG = { id: 'custom_' + Date.now(), title: title, type: 'url', url: gameUrl };
 
-                    const dbName = "GameStorageDB";
-                    const req = indexedDB.open(dbName, 1);
-                    req.onupgradeneeded = ev => {
-                        ev.target.result.createObjectStore("customGames", { keyPath: "id" });
-                    };
-                    req.onsuccess = ev => {
-                        const db = ev.target.result;
-                        try {
-                            const tx = db.transaction("customGames", "readwrite");
-                            tx.objectStore("customGames").put(newG);
-                            tx.oncomplete = () => {
-                                document.getElementById('bookmark-overlay').style.display = 'none';
-                                document.getElementById('bookmark-app-name').value = '';
-                                selectedFile = null;
-                                db.close();
-                                
-                                // Tell carmeow.html to reload the sidebar game list
-                                if (window.parent && window.parent !== window) {
-                                    if (typeof window.parent.loadGames === 'function') {
-                                        window.parent.loadGames();
-                                    } else if (window.parent.games && typeof window.parent.renderGameList === 'function') {
-                                        window.parent.games.push(newG);
-                                        window.parent.renderGameList();
-                                    }
-                                }
-                            };
-                        } catch(err) {
-                            console.error("Error saving to DB:", err);
-                            db.close();
+            const dbName = "GameStorageDB";
+            const req = indexedDB.open(dbName, 1);
+            req.onupgradeneeded = ev => {
+                ev.target.result.createObjectStore("customGames", { keyPath: "id" });
+            };
+            req.onsuccess = ev => {
+                const db = ev.target.result;
+                try {
+                    const tx = db.transaction("customGames", "readwrite");
+                    tx.objectStore("customGames").put(newG);
+                    tx.oncomplete = () => {
+                        document.getElementById('bookmark-overlay').style.display = 'none';
+                        document.getElementById('bookmark-app-name').value = '';
+                        selectedFile = null;
+                        db.close();
+                        
+                        // Tell carmeow.html to reload the sidebar game list
+                        if (window.parent && window.parent !== window) {
+                            if (typeof window.parent.loadGames === 'function') {
+                                window.parent.loadGames();
+                            } else if (window.parent.games && typeof window.parent.renderGameList === 'function') {
+                                window.parent.games.push(newG);
+                                window.parent.renderGameList();
+                            }
                         }
                     };
-                };
-                reader.readAsDataURL(blob);
-            } catch(err) {
-                console.error("Failed to bookmark:", err);
-                alert("Error fetching game for bookmarking.");
-            }
+                } catch(err) {
+                    console.error("Error saving to DB:", err);
+                    db.close();
+                }
+            };
         });
     </script>
     <script src="https://cdn.jsdelivr.net/gh/bubbls/ugs-singlefile@main/games.js"></script>
