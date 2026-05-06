@@ -6,7 +6,7 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            background: linear-gradient(135deg, #2e3244 0%, #36224b 100%);
+            background: #1a1a1a;
             min-height: 100vh;
             margin: 0;
             padding: 0;
@@ -123,7 +123,7 @@
         }
 
         input[type="button"] {
-            background: rgb(89, 134, 218);
+            background: #2c2c2c;
             border: none;
             padding: 15px 30px;
             font-size: 16px;
@@ -141,7 +141,7 @@
         input[type="button"]:hover {
             transform: translateY(-2px);
             box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
-            background: #79aadb;
+            background: #3d3d3d;
         }
 
         input[type="button"]:active {
@@ -190,16 +190,16 @@
             </a>
             </h2>
             <div id="search-container"
-                style="position: sticky; top: 0; padding: 15px 0; background: linear-gradient(135deg, #2e3244 0%, #36224b 100%); z-index: 900; display: flex; justify-content: center; align-items: center; gap: 10px; margin-bottom: 30px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                style="position: sticky; top: 0; padding: 15px 0; background: #1f1f1f; z-index: 900; display: flex; justify-content: center; align-items: center; gap: 10px; margin-bottom: 30px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
                 <input type="text" placeholder="Search..." id="searchInput"
-                    style="padding: 13px; width: 100%; max-width: 420px; border-radius: 8px; border: none; box-shadow: 0 2px 4px rgba(7, 105, 218, 0.1);">
-                <button id="bookmark-btn" style="background: red; border: none; border-radius: 8px; padding: 5px; cursor: pointer; display: flex; align-items: center; justify-content: center; width: 45px; height: 45px; flex-shrink: 0; transition: transform 0.2s;">
-                    <img src="bookmark.jpg" style="width: 100%; height: 100%; object-fit: contain; border-radius: 4px; pointer-events: none;">
+                    style="padding: 13px; width: 100%; max-width: 420px; border-radius: 8px; border: none; box-shadow: 0 2px 4px rgba(7, 105, 218, 0.1); background: #333; color: white;">
+                <button id="bookmark-btn" style="background: red; border: none; border-radius: 8px; padding: 5px; cursor: pointer; display: flex; align-items: center; justify-content: center; width: 45px; height: 45px; flex-shrink: 0; transition: background 0.2s, transform 0.2s;">
+                    <img src="bookmark.png" style="width: 100%; height: 100%; object-fit: contain; border-radius: 4px; pointer-events: none;">
                 </button>
                 <script src="https://cdn.jsdelivr.net/gh/bubbls/ugs-singlefile@main/searchbut.js"></script>
                 <button id="lolbutton"
                     onclick="const script = document.createElement('script');script.src = 'https://cdn.jsdelivr.net/gh/bubbls/ugs-singlefile@latest/game.js';document.body.appendChild(script);"
-                    style="padding: 13px; border-radius: 8px; border: none; background: rgb(89, 134, 218); color: white; cursor: pointer; font-size: 14px;">Click
+                    style="padding: 13px; border-radius: 8px; border: none; background: #2c2c2c; color: white; cursor: pointer; font-size: 14px;">Click
                     to load if it isnt loading</button>
             </div>
 
@@ -214,76 +214,103 @@
             <h2 style="color: #2196F3; margin-top: 0; margin-bottom: 12px; font-size: 24px;">Enter a name for this app.</h2>
             <input type="text" id="bookmark-app-name" placeholder="App Title" style="width: 100%; padding: 12px; margin-bottom: 18px; box-sizing: border-box; border-radius: 8px; border: 1px solid #444; background: #333; color: white; font-size: 16px;">
             <button id="confirm-bookmark-btn" style="background: #4CAF50; color: white; border: none; padding: 12px; border-radius: 8px; width: 100%; font-size: 16px; font-weight: bold; cursor: pointer; transition: filter 0.2s;">Bookmark</button>
-            <button id="cancel-bookmark-btn" style="background: #3d3d3d; color: white; border: 1px solid #444; padding: 10px; border-radius: 8px; width: 100%; font-size: 14px; cursor: pointer; margin-top: 10px;">Cancel</button>
         </div>
     </div>
 
     <script>
-        document.getElementById('bookmark-btn').addEventListener('click', () => {
-            document.getElementById('bookmark-overlay').style.display = 'flex';
-            document.getElementById('bookmark-app-name').focus();
+        let isBookmarkMode = false;
+        let selectedFile = null;
+
+        const bookmarkBtn = document.getElementById('bookmark-btn');
+        bookmarkBtn.addEventListener('click', () => {
+            isBookmarkMode = !isBookmarkMode;
+            if (isBookmarkMode) {
+                bookmarkBtn.style.background = '#666666'; // Turn dark gray
+            } else {
+                bookmarkBtn.style.background = 'red'; // Turn back to normal red
+            }
         });
 
-        document.getElementById('cancel-bookmark-btn').addEventListener('click', () => {
-            document.getElementById('bookmark-overlay').style.display = 'none';
-            document.getElementById('bookmark-app-name').value = '';
+        // Intercept game clicks when in Bookmarking Mode
+        document.addEventListener('click', (e) => {
+            if (isBookmarkMode && e.target.tagName === 'INPUT' && e.target.type === 'button') {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                selectedFile = e.target.value;
+                document.getElementById('bookmark-app-name').value = selectedFile;
+                document.getElementById('bookmark-overlay').style.display = 'flex';
+                document.getElementById('bookmark-app-name').focus();
+            }
+        }, true);
+
+        // Escape to cancel prompt
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && document.getElementById('bookmark-overlay').style.display === 'flex') {
+                document.getElementById('bookmark-overlay').style.display = 'none';
+                document.getElementById('bookmark-app-name').value = '';
+                selectedFile = null;
+            }
         });
 
         document.getElementById('confirm-bookmark-btn').addEventListener('click', async () => {
             const title = document.getElementById('bookmark-app-name').value.trim();
             if (!title) return alert('Please enter a name for this app.');
+            if (!selectedFile) return;
 
-            let dataUrl;
-            try {
-                const res = await fetch(window.location.href);
-                if (!res.ok) throw new Error("Fetch failed");
-                const blob = await res.blob();
-                dataUrl = await new Promise(r => { 
-                    const reader = new FileReader(); 
-                    reader.onload = e => r(e.target.result); 
-                    reader.readAsDataURL(blob); 
-                });
-            } catch(e) {
-                // Fallback for file:/// scheme
-                const clone = document.documentElement.cloneNode(true);
-                const sections = clone.querySelector('#sections-container');
-                if (sections) sections.innerHTML = '';
-                const sidebar = clone.querySelector('#sidebar');
-                if (sidebar) sidebar.innerHTML = '';
-                const overlay = clone.querySelector('#bookmark-overlay');
-                if (overlay) overlay.style.display = 'none';
-                
-                const html = "<!DOCTYPE html>\n" + clone.outerHTML;
-                const blob = new Blob([html], { type: 'text/html' });
-                dataUrl = await new Promise(r => { 
-                    const reader = new FileReader(); 
-                    reader.onload = ev => r(ev.target.result); 
-                    reader.readAsDataURL(blob); 
-                });
-            }
-
-            const dbName = "GameStorageDB";
-            const newG = { id: 'custom_' + Date.now(), title: title, type: 'file', content: dataUrl };
-
-            const req = indexedDB.open(dbName, 1);
-            req.onupgradeneeded = e => {
-                e.target.result.createObjectStore("customGames", { keyPath: "id" });
-            };
-            req.onsuccess = e => {
-                const db = e.target.result;
-                try {
-                    const tx = db.transaction("customGames", "readwrite");
-                    tx.objectStore("customGames").put(newG);
-                    tx.oncomplete = () => {
-                        document.getElementById('bookmark-overlay').style.display = 'none';
-                        document.getElementById('bookmark-app-name').value = '';
-                        db.close();
-                    };
-                } catch(err) {
-                    console.error("Error saving to DB:", err);
-                    db.close();
+            // Use games.js normalization to build exact URL
+            function normalizeFileName(name) {
+                if (name.startsWith("cl")) {
+                    name = name.substring(2);
                 }
-            };
+                if (name.includes(".") && name.lastIndexOf(".") > 0) return name;
+                return name + ".html";
+            }
+            
+            const normalized = normalizeFileName(selectedFile);
+            const encoded = encodeURIComponent(normalized);
+            const gameUrl = `https://cdn.jsdelivr.net/gh/bubbls/ugs-singlefile/UGS-Files/${encoded}?t=${Date.now()}`;
+
+            try {
+                // Fetch the game's actual HTML
+                const response = await fetch(gameUrl);
+                if (!response.ok) throw new Error("Fetch failed");
+                const text = await response.text();
+                
+                // Convert text into a Data URL
+                const blob = new Blob([text], {type: 'text/html'});
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const dataUrl = e.target.result;
+                    const newG = { id: 'custom_' + Date.now(), title: title, type: 'file', content: dataUrl };
+
+                    const dbName = "GameStorageDB";
+                    const req = indexedDB.open(dbName, 1);
+                    req.onupgradeneeded = ev => {
+                        ev.target.result.createObjectStore("customGames", { keyPath: "id" });
+                    };
+                    req.onsuccess = ev => {
+                        const db = ev.target.result;
+                        try {
+                            const tx = db.transaction("customGames", "readwrite");
+                            tx.objectStore("customGames").put(newG);
+                            tx.oncomplete = () => {
+                                document.getElementById('bookmark-overlay').style.display = 'none';
+                                document.getElementById('bookmark-app-name').value = '';
+                                selectedFile = null;
+                                db.close();
+                            };
+                        } catch(err) {
+                            console.error("Error saving to DB:", err);
+                            db.close();
+                        }
+                    };
+                };
+                reader.readAsDataURL(blob);
+            } catch(err) {
+                console.error("Failed to bookmark:", err);
+                alert("Error fetching game for bookmarking.");
+            }
         });
     </script>
     <script src="https://cdn.jsdelivr.net/gh/bubbls/ugs-singlefile@main/games.js"></script>
