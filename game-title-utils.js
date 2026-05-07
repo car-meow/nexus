@@ -14,6 +14,7 @@
         "fall", "falling", "jump", "jumper", "jumping", "swing", "sword", "blaster", "storm", "rage",
         "mad", "crazy", "extreme", "ultimate", "zero", "one", "two", "three", "four", "five", "six",
         "seven", "eight", "nine", "ten", "among", "us", "paper", "duck", "life", "ducklife", "line",
+        "beaver", "beavers",
         "golfing", "quests", "master", "masters", "fighter", "fighters", "arena", "arenas", "puzzle",
         "puzzles", "adventure", "adventures", "shark", "survival", "survivor", "survivors", "rocket",
         "league", "hoops", "slam", "jam", "pinball", "2048", "1v1", "3d", "2d", "x3m", "rrr"

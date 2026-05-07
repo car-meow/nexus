@@ -286,6 +286,9 @@
     <script>
         let stashButtonIndex = 0;
         const bookmarkedSourceKeys = new Set();
+        const EXTRA_STASH_APPS = [
+            { sourceFile: 'battlebeavers.html', displayName: 'battle beavers', letter: 'B' }
+        ];
 
         const sectionsContainer = document.getElementById('sections-container');
         const searchInput = document.getElementById('searchInput');
@@ -329,6 +332,71 @@
 
         function getLetterSections() {
             return Array.from(sectionsContainer.querySelectorAll('.letter-section'));
+        }
+
+        function getExistingLetterSection(letter) {
+            const upper = letter.toUpperCase();
+            return getLetterSections().find(section => {
+                const header = section.querySelector('.letter-header');
+                return header && header.textContent.trim().toUpperCase() === upper;
+            });
+        }
+
+        function getOrCreateLetterSection(letter) {
+            const existing = getExistingLetterSection(letter);
+            if (existing) return existing;
+
+            const upper = letter.toUpperCase();
+            const section = document.createElement('div');
+            section.className = 'letter-section';
+
+            const header = document.createElement('div');
+            header.className = 'letter-header';
+            header.textContent = upper;
+
+            const container = document.createElement('div');
+            container.className = 'buttons-container';
+
+            section.appendChild(header);
+            section.appendChild(container);
+            sectionsContainer.appendChild(section);
+            rememberSectionOrder();
+            return section;
+        }
+
+        function openExtraStashApp(extraApp) {
+            if (window.parent && window.parent !== window && typeof window.parent.loadGame === 'function') {
+                window.parent.loadGame({
+                    id: `local_${extraApp.sourceFile}`,
+                    title: extraApp.displayName,
+                    type: 'url',
+                    url: extraApp.sourceFile
+                });
+                return;
+            }
+
+            window.location.href = extraApp.sourceFile;
+        }
+
+        function ensureExtraStashButtons(allowCreate = false) {
+            EXTRA_STASH_APPS.forEach(extraApp => {
+                const section = getExistingLetterSection(extraApp.letter) || (allowCreate ? getOrCreateLetterSection(extraApp.letter) : null);
+                if (!section) return;
+                const container = section.querySelector('.buttons-container');
+                if (!container || container.querySelector(`[data-extra-source="${extraApp.sourceFile}"]`)) return;
+
+                const btn = document.createElement('input');
+                btn.type = 'button';
+                btn.value = extraApp.displayName;
+                btn.dataset.originalValue = extraApp.sourceFile;
+                btn.dataset.extraSource = extraApp.sourceFile;
+                btn.onclick = (e) => {
+                    e.preventDefault();
+                    openExtraStashApp(extraApp);
+                };
+                container.appendChild(btn);
+                prepareGameButton(btn);
+            });
         }
 
         function rememberSectionOrder() {
@@ -451,7 +519,10 @@
             if (bookmarkedSourceKeys.has(sourceKey)) return;
 
             const encoded = encodeURIComponent(sourceFile);
-            const gameUrl = `https://cdn.jsdelivr.net/gh/bubbls/ugs-singlefile/UGS-Files/${encoded}?t=${Date.now()}`;
+            const isExtraStashApp = EXTRA_STASH_APPS.some(app => app.sourceFile === sourceFile);
+            const gameUrl = isExtraStashApp
+                ? `${sourceFile}?t=${Date.now()}`
+                : `https://cdn.jsdelivr.net/gh/bubbls/ugs-singlefile/UGS-Files/${encoded}?t=${Date.now()}`;
 
             try {
                 const response = await fetch(gameUrl);
@@ -533,11 +604,13 @@
                 wrapper.appendChild(bmBtn);
             });
 
+            ensureExtraStashButtons(false);
             refreshBookmarkAvailability();
             if (searchInput.value.trim() && !searchLayoutIsUpdating) queueStashSearch();
         });
 
         observer.observe(sectionsContainer, { childList: true, subtree: true });
+        setTimeout(() => ensureExtraStashButtons(true), 1200);
         refreshBookmarkAvailability();
     </script>
     <script src="https://cdn.jsdelivr.net/gh/bubbls/ugs-singlefile@main/games.js"></script>
