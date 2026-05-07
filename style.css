@@ -81,6 +81,49 @@ main { display: flex; flex: 1; overflow: hidden; }
 li:hover .trash-btn { opacity: 1; }
 .trash-btn:hover { color: #f44336; transform: scale(1.2); }
 
+/* --- Drag Handle & Reorder --- */
+.drag-handle-zone {
+    position: absolute;
+    right: 0;
+    top: 0;
+    width: 30px;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: grab;
+    z-index: 5;
+    border-radius: 0 10px 10px 0;
+}
+.drag-handle-zone:active { cursor: grabbing; }
+.drag-handle-zone img {
+    width: 16px;
+    height: 16px;
+    pointer-events: none;
+    opacity: 0.5;
+    transition: opacity 0.2s;
+}
+#game-list li:hover .drag-handle-zone img { opacity: 1; }
+
+/* Dragging state for the item being moved */
+#game-list li.dragging {
+    opacity: 0.85;
+    z-index: 9999;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+    pointer-events: none;
+    transition: none;
+}
+
+/* Drop indicator line */
+.drop-indicator {
+    height: 2px;
+    background: #575757;
+    margin: 0 15px;
+    border-radius: 1px;
+    pointer-events: none;
+    transition: opacity 0.15s;
+}
+
 .add-game { margin-top: 20px; padding-top: 20px; border-top: 1px solid #333; }
 input[type="text"], input[type="file"], #stash-search { width: 100%; padding: 10px; background: #121212; border: 1px solid #444; color: white; border-radius: 8px; margin-bottom: 10px; outline: none; }
 .game-container { flex: 1; background-color: #000; position: relative; }

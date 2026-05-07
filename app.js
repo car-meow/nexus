@@ -21,7 +21,33 @@ async function loadGames() {
         const defaults = await res.json();
         games = [...defaults, ...custom];
     } catch { games = [...custom]; }
+
+    // Apply saved order
+    const savedOrder = localStorage.getItem('sidebar-game-order');
+    if (savedOrder) {
+        try {
+            const orderIds = JSON.parse(savedOrder);
+            const gameMap = new Map(games.map(g => [g.id.toString(), g]));
+            const ordered = [];
+            // First place games in saved order
+            orderIds.forEach(id => {
+                if (gameMap.has(id)) {
+                    ordered.push(gameMap.get(id));
+                    gameMap.delete(id);
+                }
+            });
+            // Append any new games not in the saved order
+            gameMap.forEach(g => ordered.push(g));
+            games = ordered;
+        } catch(e) { /* ignore bad data */ }
+    }
+
     renderGameList();
+}
+
+function saveGameOrder() {
+    const orderIds = games.map(g => g.id.toString());
+    localStorage.setItem('sidebar-game-order', JSON.stringify(orderIds));
 }
 
 function renderGameList() {
@@ -40,14 +66,160 @@ function renderGameList() {
         
         li.onclick = () => loadGame(game);
         li.appendChild(t);
+
         if (game.id.toString().startsWith('custom_')) {
             const del = document.createElement('span');
             del.innerHTML = "🗑️"; del.className = "trash-btn";
             del.onclick = (e) => { e.stopPropagation(); deleteGame(game.id, i); };
+            del.style.marginRight = "28px"; // make room for drag handle
             li.appendChild(del);
         }
+
+        // Add drag handle for all items EXCEPT Master Stash (ugs-stash)
+        if (game.id !== "ugs-stash") {
+            const dragZone = document.createElement('div');
+            dragZone.className = 'drag-handle-zone';
+            dragZone.innerHTML = '<img src="drag.svg" alt="drag">';
+            dragZone.addEventListener('mousedown', (e) => {
+                e.stopPropagation();
+                e.preventDefault();
+                startDrag(e, li, i);
+            });
+            li.appendChild(dragZone);
+        }
+
         list.appendChild(li);
     });
+}
+
+/* =========================================
+   DRAG-TO-REORDER SYSTEM
+========================================= */
+let dragState = null;
+
+function startDrag(e, li, index) {
+    const list = document.getElementById('game-list');
+    const listRect = list.getBoundingClientRect();
+    const liRect = li.getBoundingClientRect();
+
+    // Snapshot all item rects before we start modifying DOM
+    const items = Array.from(list.querySelectorAll('li'));
+    const itemRects = items.map(item => item.getBoundingClientRect());
+
+    // Create a placeholder/indicator line
+    const indicator = document.createElement('div');
+    indicator.className = 'drop-indicator';
+    
+    // Calculate offset from mouse to top of the li
+    const offsetY = e.clientY - liRect.top;
+
+    // Fix the li's dimensions and position it absolutely
+    li.style.position = 'fixed';
+    li.style.width = liRect.width + 'px';
+    li.style.left = liRect.left + 'px';
+    li.style.top = liRect.top + 'px';
+    li.style.margin = '0';
+    li.classList.add('dragging');
+
+    // Insert the indicator where the li was
+    list.insertBefore(indicator, li.nextSibling);
+
+    dragState = {
+        li,
+        index,
+        currentDropIndex: index,
+        offsetY,
+        indicator,
+        listRect,
+        list
+    };
+
+    document.addEventListener('mousemove', onDragMove);
+    document.addEventListener('mouseup', onDragEnd);
+}
+
+function onDragMove(e) {
+    if (!dragState) return;
+    const { li, offsetY, indicator, list } = dragState;
+
+    // Move the dragged item vertically (strictly vertical — keep horizontal fixed)
+    const newTop = e.clientY - offsetY;
+    li.style.top = newTop + 'px';
+
+    // Determine where the indicator should go
+    const items = Array.from(list.querySelectorAll('li:not(.dragging)'));
+    let dropIndex = items.length; // default: end
+
+    for (let i = 0; i < items.length; i++) {
+        const rect = items[i].getBoundingClientRect();
+        const midY = rect.top + rect.height / 2;
+        if (e.clientY < midY) {
+            dropIndex = i;
+            break;
+        }
+    }
+
+    // Check if we need to account for the UGS stash being unmovable at index 0
+    // The UGS item should always stay at position 0
+    const firstItem = items[0];
+    if (firstItem && firstItem.classList.contains('ugs-item') && dropIndex === 0) {
+        dropIndex = 1;
+    }
+
+    if (dropIndex !== dragState.currentDropIndex) {
+        dragState.currentDropIndex = dropIndex;
+        // Move the indicator
+        if (indicator.parentNode) indicator.parentNode.removeChild(indicator);
+        if (dropIndex >= items.length) {
+            list.appendChild(indicator);
+        } else {
+            list.insertBefore(indicator, items[dropIndex]);
+        }
+    }
+}
+
+function onDragEnd(e) {
+    if (!dragState) return;
+    document.removeEventListener('mousemove', onDragMove);
+    document.removeEventListener('mouseup', onDragEnd);
+
+    const { li, index, currentDropIndex, indicator, list } = dragState;
+
+    // Clean up the dragged element styles
+    li.style.position = '';
+    li.style.width = '';
+    li.style.left = '';
+    li.style.top = '';
+    li.style.margin = '';
+    li.classList.remove('dragging');
+
+    // Remove indicator
+    if (indicator.parentNode) indicator.parentNode.removeChild(indicator);
+
+    // Calculate the actual new index in the games array
+    // Get all li items in their current DOM order (excluding the dragged one and indicator)
+    const allItems = Array.from(list.querySelectorAll('li:not(.dragging)'));
+    
+    // The currentDropIndex is relative to visible non-dragging items
+    // We need to map it back to the games array
+    let actualNewIndex = currentDropIndex;
+    
+    // If dragging down, account for the removed item shifting indices
+    if (index < actualNewIndex) {
+        // No adjustment needed — the drop index from the non-dragging list is correct
+    }
+
+    // Move in the games array
+    if (index !== actualNewIndex && actualNewIndex >= 0 && actualNewIndex <= games.length) {
+        const [moved] = games.splice(index, 1);
+        // If moving down, the target index shifted by one after removal
+        const insertAt = index < actualNewIndex ? actualNewIndex - 1 : actualNewIndex;
+        games.splice(insertAt, 0, moved);
+        saveGameOrder();
+    }
+
+    dragState = null;
+    renderGameList();
 }
 
 function loadGame(game) {
@@ -144,7 +316,9 @@ async function deleteGame(id, index) {
     if (!confirm("Delete permanently?")) return;
     const tx = db.transaction("customGames", "readwrite");
     await tx.objectStore("customGames").delete(id);
-    games.splice(index, 1); renderGameList();
+    games.splice(index, 1); 
+    saveGameOrder();
+    renderGameList();
 }
 
 // Chromebook Universal Tab Killer
