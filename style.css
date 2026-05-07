@@ -109,7 +109,10 @@ body.app-is-dragging #game-list li:not(.dragging):not(.tutorial-item):not(.ugs-i
 .ugs-item { background-color: #5986da !important; border: 1px solid #153466 !important; color: white !important; font-weight: bold; }
 .ugs-item:hover { background-color: #153466 !important; }
 
-.trash-btn { opacity: 0; transition: opacity 0.2s, color 0.2s; font-size: 18px; padding: 0 5px; }
+.app-action-btn { opacity: 0; transition: opacity 0.2s, color 0.2s, transform 0.2s; font-size: 18px; padding: 0 3px; line-height: 1; cursor: pointer; }
+li:hover .app-action-btn { opacity: 1; }
+.rename-btn:hover { color: #81C784; transform: scale(1.12); }
+.trash-btn { font-size: 18px; }
 li:hover .trash-btn { opacity: 1; }
 .trash-btn:hover { color: #f44336; transform: scale(1.2); }
 
@@ -169,6 +172,9 @@ li:hover .trash-btn { opacity: 1; }
 
 .add-game { margin-top: 20px; padding-top: 20px; border-top: 1px solid #333; }
 input[type="text"], input[type="file"], #stash-search { width: 100%; padding: 10px; background: #121212; border: 1px solid #444; color: white; border-radius: 8px; margin-bottom: 10px; outline: none; }
+.rename-input { background: #333 !important; padding: 12px !important; margin: 12px 0 18px !important; font-size: 16px; }
+.rename-done-btn { background: #4CAF50; color: white; border: none; padding: 12px; border-radius: 8px; width: 100%; font-size: 16px; font-weight: bold; cursor: pointer; transition: filter 0.2s; }
+.rename-done-btn:hover { filter: brightness(1.12); }
 .game-container { flex: 1; background-color: #000; position: relative; }
 iframe { width: 100%; height: 100%; border: none; }
 

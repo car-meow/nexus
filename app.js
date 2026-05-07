@@ -83,10 +83,17 @@ function renderGameList() {
         li.appendChild(t);
 
         if (game.id.toString().startsWith('custom_')) {
+            const rename = document.createElement('span');
+            rename.innerHTML = "&#128221;";
+            rename.className = "app-action-btn rename-btn";
+            rename.title = "Rename app";
+            rename.onclick = (e) => { e.stopPropagation(); openRenamePrompt(game); };
+            li.appendChild(rename);
+
             const del = document.createElement('span');
-            del.innerHTML = "🗑️"; del.className = "trash-btn";
+            del.innerHTML = "🗑️"; del.className = "app-action-btn trash-btn";
             del.onclick = (e) => { e.stopPropagation(); deleteGame(game.id, i); };
-            del.style.marginRight = "28px"; // make room for drag handle
+            del.style.marginRight = "22px"; // keep close to the drag handle
             li.appendChild(del);
         }
 
@@ -324,6 +331,68 @@ async function deleteGame(id, index) {
     saveGameOrder();
     renderGameList();
 }
+
+let renameTargetId = null;
+
+function openRenamePrompt(game) {
+    const overlay = document.getElementById('rename-overlay');
+    const input = document.getElementById('rename-app-title');
+    if (!overlay || !input) return;
+
+    renameTargetId = game.id;
+    input.value = game.title;
+    overlay.style.display = 'flex';
+    setTimeout(() => {
+        input.focus();
+        input.select();
+    }, 0);
+}
+
+function closeRenamePrompt() {
+    const overlay = document.getElementById('rename-overlay');
+    const input = document.getElementById('rename-app-title');
+    if (overlay) overlay.style.display = 'none';
+    if (input) input.value = '';
+    renameTargetId = null;
+}
+
+async function renameGame() {
+    const input = document.getElementById('rename-app-title');
+    const title = input ? input.value.trim() : '';
+    if (!renameTargetId || !title) return;
+
+    const game = games.find(g => g.id === renameTargetId);
+    if (!game || !game.id.toString().startsWith('custom_')) return closeRenamePrompt();
+
+    game.title = title;
+    const tx = db.transaction("customGames", "readwrite");
+    tx.objectStore("customGames").put(game);
+    await new Promise(resolve => {
+        tx.oncomplete = resolve;
+        tx.onerror = resolve;
+    });
+
+    closeRenamePrompt();
+    renderGameList();
+}
+
+const renameDoneBtn = document.getElementById('rename-done-btn');
+if (renameDoneBtn) renameDoneBtn.onclick = renameGame;
+
+const renameInput = document.getElementById('rename-app-title');
+if (renameInput) {
+    renameInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') renameGame();
+        if (e.key === 'Escape') closeRenamePrompt();
+    });
+}
+
+document.addEventListener('keydown', (e) => {
+    const overlay = document.getElementById('rename-overlay');
+    if (e.key === 'Escape' && overlay && overlay.style.display === 'flex') {
+        closeRenamePrompt();
+    }
+});
 
 // Chromebook Universal Tab Killer
 function killMainTab() {

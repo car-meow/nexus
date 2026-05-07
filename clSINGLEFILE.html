@@ -127,11 +127,6 @@
             position: relative;
             width: 100%;
             max-width: 600px;
-            transition: transform 0.3s ease;
-        }
-
-        .game-btn-wrapper:hover {
-            transform: translateY(-2px);
         }
 
         .game-btn-wrapper input[type="button"] {
@@ -150,15 +145,13 @@
         }
 
         .game-btn-wrapper:hover input[type="button"] {
+            transform: translateY(-2px);
             box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
             background: #3d3d3d;
         }
 
-        .game-btn-wrapper:active {
-            transform: translateY(0);
-        }
-
         .game-btn-wrapper:active input[type="button"] {
+            transform: translateY(0);
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
 
@@ -178,13 +171,18 @@
             align-items: center;
             justify-content: center;
             opacity: 0;
-            transition: opacity 0.25s ease;
+            transition: opacity 0.25s ease, transform 0.3s ease;
             z-index: 2;
             padding: 4px;
         }
 
         .game-btn-wrapper:hover .game-bookmark-btn {
             opacity: 1;
+            transform: translateY(calc(-50% - 2px));
+        }
+
+        .game-btn-wrapper:active .game-bookmark-btn {
+            transform: translateY(-50%);
         }
 
         .game-bookmark-btn img {
@@ -304,6 +302,8 @@
 
         const sectionsContainer = document.getElementById('sections-container');
         const searchInput = document.getElementById('searchInput');
+        let searchLayoutIsUpdating = false;
+        let searchQueueTimer = null;
         const searchResultsContainer = document.createElement('div');
         searchResultsContainer.id = 'search-results-container';
         searchResultsContainer.className = 'search-results-container';
@@ -372,6 +372,7 @@
         }
 
         function applyStashSearch() {
+            searchLayoutIsUpdating = true;
             rememberSectionOrder();
             restoreSectionOrder();
             resetSearchStyles();
@@ -380,6 +381,7 @@
             if (!query) {
                 document.body.classList.remove('stash-searching');
                 noResultsMessage.style.display = 'none';
+                setTimeout(() => { searchLayoutIsUpdating = false; }, 0);
                 return;
             }
 
@@ -415,11 +417,12 @@
             noResultsMessage.style.display = matchCount ? 'none' : 'block';
             searchResultsContainer.appendChild(noResultsMessage);
             window.scrollTo({ top: 0, behavior: 'auto' });
+            setTimeout(() => { searchLayoutIsUpdating = false; }, 0);
         }
 
         function queueStashSearch() {
-            setTimeout(applyStashSearch, 0);
-            setTimeout(applyStashSearch, 50);
+            clearTimeout(searchQueueTimer);
+            searchQueueTimer = setTimeout(applyStashSearch, 0);
         }
 
         searchInput.addEventListener('input', queueStashSearch);
@@ -461,7 +464,7 @@
                 wrapper.appendChild(bmBtn);
             });
 
-            if (searchInput.value.trim()) queueStashSearch();
+            if (searchInput.value.trim() && !searchLayoutIsUpdating) queueStashSearch();
         });
 
         observer.observe(sectionsContainer, { childList: true, subtree: true });
