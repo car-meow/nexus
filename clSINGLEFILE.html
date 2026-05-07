@@ -469,14 +469,25 @@
 
         observer.observe(sectionsContainer, { childList: true, subtree: true });
 
-        // Escape to cancel prompt
+        function closeBookmarkPrompt() {
+            document.getElementById('bookmark-overlay').style.display = 'none';
+            document.getElementById('bookmark-app-name').value = '';
+            selectedFile = null;
+        }
+
+        // Keyboard shortcuts for the bookmark prompt
         document.addEventListener('keydown', (e) => {
+            const bookmarkOverlay = document.getElementById('bookmark-overlay');
+            if (bookmarkOverlay.style.display !== 'flex') return;
+
             if (e.key === 'Escape') {
-                if (document.getElementById('bookmark-overlay').style.display === 'flex') {
-                    document.getElementById('bookmark-overlay').style.display = 'none';
-                    document.getElementById('bookmark-app-name').value = '';
-                    selectedFile = null;
-                }
+                e.preventDefault();
+                closeBookmarkPrompt();
+            }
+
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                document.getElementById('confirm-bookmark-btn').click();
             }
         });
 
@@ -519,9 +530,7 @@
                             const tx = db.transaction("customGames", "readwrite");
                             tx.objectStore("customGames").put(newG);
                             tx.oncomplete = () => {
-                                document.getElementById('bookmark-overlay').style.display = 'none';
-                                document.getElementById('bookmark-app-name').value = '';
-                                selectedFile = null;
+                                closeBookmarkPrompt();
                                 db.close();
 
                                 // Tell carmeow.html to reload the sidebar game list

@@ -179,6 +179,30 @@
             document.addEventListener('keydown', (e) => {
                 if (e.ctrlKey && e.shiftKey && (e.key === 'L' || e.key === 'l')) { e.preventDefault(); openUserModal(false); }
                 if (e.ctrlKey && e.shiftKey && (e.key === '0' || e.key === ')')) { e.preventDefault(); openUserModal(true); }
+
+                const hostModal = document.getElementById('host-modal');
+                const userListModal = document.getElementById('user-list-modal');
+
+                if (e.key === 'Escape') {
+                    if (hostModal.style.display === 'flex') {
+                        e.preventDefault();
+                        hostModal.style.display = 'none';
+                    }
+                    if (userListModal.style.display === 'block') {
+                        e.preventDefault();
+                        userListModal.style.display = 'none';
+                    }
+                }
+
+                if (e.key === 'Enter') {
+                    if (hostModal.style.display === 'flex') {
+                        e.preventDefault();
+                        document.getElementById('start-host-btn').click();
+                    } else if (userListModal.style.display === 'block') {
+                        e.preventDefault();
+                        userListModal.style.display = 'none';
+                    }
+                }
             });
 
             function openUserModal(isAdmin) {
@@ -425,6 +449,7 @@
             };
             
             document.getElementById('msg-input').onkeypress = (e) => { if(e.key === 'Enter') document.getElementById('send-btn').click(); };
+            document.getElementById('pin-entry').onkeypress = (e) => { if(e.key === 'Enter') document.getElementById('join-btn').click(); };
             
             document.getElementById('disband-btn').onclick = () => {
                 if(confirm("Disband Room?")) {

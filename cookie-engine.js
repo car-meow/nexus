@@ -690,6 +690,15 @@ window.addEventListener('DOMContentLoaded', () => {
         if (e.key === 'Escape') {
             closeAllModals();
         }
+
+        if (e.key === 'Enter') {
+            const tut = document.getElementById('tut-overlay');
+            if (tut && tut.style.display === 'flex') {
+                e.preventDefault();
+                document.getElementById('tut-btn').click();
+            }
+        }
+
         if (e.key === 'm' || e.key === 'M') {
             DOM.muteBtn.click();
         }

@@ -84,8 +84,19 @@
         });
 
         document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && document.getElementById('custom-app-overlay').style.display === 'flex') {
-                document.getElementById('custom-app-overlay').style.display = 'none';
+            const customOverlay = document.getElementById('custom-app-overlay');
+            const renameOverlay = document.getElementById('rename-overlay');
+
+            if (e.key === 'Escape') {
+                if (customOverlay.style.display === 'flex') customOverlay.style.display = 'none';
+                if (renameOverlay && renameOverlay.style.display === 'flex') {
+                    document.getElementById('rename-done-btn').dispatchEvent(new Event('rename-cancel'));
+                }
+            }
+
+            if (e.key === 'Enter' && customOverlay.style.display === 'flex') {
+                e.preventDefault();
+                document.getElementById('add-game-btn').click();
             }
         });
     </script>

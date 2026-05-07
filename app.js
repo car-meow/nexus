@@ -324,7 +324,7 @@ if (addGameBtn) {
 }
 
 async function deleteGame(id, index) {
-    if (!confirm("Delete permanently?")) return;
+    if (!confirm("Delete? You can always re-bookmark app, and progress will not be removed.")) return;
     const tx = db.transaction("customGames", "readwrite");
     await tx.objectStore("customGames").delete(id);
     games.splice(index, 1); 
@@ -377,7 +377,10 @@ async function renameGame() {
 }
 
 const renameDoneBtn = document.getElementById('rename-done-btn');
-if (renameDoneBtn) renameDoneBtn.onclick = renameGame;
+if (renameDoneBtn) {
+    renameDoneBtn.onclick = renameGame;
+    renameDoneBtn.addEventListener('rename-cancel', closeRenamePrompt);
+}
 
 const renameInput = document.getElementById('rename-app-title');
 if (renameInput) {
@@ -389,8 +392,16 @@ if (renameInput) {
 
 document.addEventListener('keydown', (e) => {
     const overlay = document.getElementById('rename-overlay');
-    if (e.key === 'Escape' && overlay && overlay.style.display === 'flex') {
+    if (!overlay || overlay.style.display !== 'flex') return;
+
+    if (e.key === 'Escape') {
+        e.preventDefault();
         closeRenamePrompt();
+    }
+
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        renameGame();
     }
 });
 
