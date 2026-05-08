@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>New Tab</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css?v=42">
     
     <!-- Markdown Parser -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
@@ -38,7 +38,7 @@
         }
         
         header { padding: 6px 16px; }
-        header h1 { font-size: 18px; }
+        header h1 { font-size: 18px; cursor: pointer; }
         .chat-layout { display: flex; flex: 1; overflow: hidden; height: calc(100vh - 44px); }
         .chat-sidebar { width: 250px; background: #1a1a1a; border-right: 1px solid #333; display: flex; flex-direction: column; padding: 15px; }
         .chat-list { flex: 1; overflow-y: auto; list-style: none; margin-top: 15px; }
@@ -60,11 +60,14 @@
         .user-msg { align-self: flex-end; background: #9C27B0; color: white; }
         .ai-msg { align-self: flex-start; background: #333; color: #eee; border: 1px solid #444; }
         .chat-input-area { display: flex; padding: 15px; background: #1f1f1f; gap: 10px; border-top: 1px solid #333; }
+
+        .trash-btn { font-size: 16px; opacity: 0.6; transition: opacity 0.2s; }
+        .trash-btn:hover { opacity: 1; color: #f44336; }
     </style>
 </head>
 <body>
     <header>
-        <h1 onclick="location.href='index.html'" style="cursor: pointer;">Toothbrush Larper</h1>
+        <h1 onclick="location.href='index.html'">Toothbrush Larper</h1>
         <div class="controls">
             <button id="new-chat-btn" class="save-btn rainbow-btn">+ New Chat</button>
             <button onclick="location.href='index.html'" class="save-btn" style="background-color: #3d3d3d;">Back</button>
@@ -124,7 +127,6 @@
                 if (m.role === 'assistant') {
                     let processedContent = m.content.replace(/\\\(/g, '$').replace(/\\\)/g, '$').replace(/\\\[/g, '$$').replace(/\\\]/g, '$$');
                     
-                    // If the text contains HTML error codes (like the Cloudflare 524 error), show it as plain text to prevent rendering giant broken pages
                     if (processedContent.includes('<!DOCTYPE html>') || processedContent.includes('Cloudflare')) {
                         d.textContent = "Error: The AI server timed out responding to your request.";
                     } else {
@@ -160,62 +162,72 @@
             out.appendChild(thinkingBubble);
             out.scrollTop = out.scrollHeight;
 
-            try {
-                // Simplified prompt & using the 'search' model which is much faster and less prone to 524 Timeouts
-                const sysPrompt = "Use Markdown formatting. Use $...$ for inline math and $$...$$ for block math.";
-                const ctx = activeHistory.slice(-4).map(m => `${m.role}: ${m.content}`).join('\n');
-                
-                // Using 'search' instead of 'openai' fixes the timeout issue for complex math
-                const res = await fetch(`https://text.pollinations.ai/${encodeURIComponent(sysPrompt + "\n\n" + ctx)}?model=search`);
-                
-                if (!res.ok) throw new Error("Server response wasn't OK");
-                
-                const fullText = await res.text();
-                
-                document.getElementById('temp-thinking').remove();
+            // Model Failover System
+            const modelsToTry = ['search', 'mistral', 'llama', 'sur'];
+            let fullText = null;
 
-                // If Cloudflare returns an HTML error page instead of text, throw an error
-                if (fullText.includes('<html') || fullText.includes('Cloudflare')) {
-                    throw new Error("Server timeout");
-                }
+            const sysPrompt = "Use Markdown formatting. Use $...$ for inline math and $$...$$ for block math.";
+            const ctx = activeHistory.slice(-4).map(m => `${m.role}: ${m.content}`).join('\n');
 
-                const d = document.createElement('div'); 
-                d.className = "message ai-msg";
-                out.appendChild(d);
-
-                const words = fullText.match(/\S+|\s+/g) || [];
-                let currentText = "";
-                let i = 0;
-
-                function typeWord() {
-                    if (i < words.length) {
-                        currentText += words[i];
-                        let processed = currentText.replace(/\\\(/g, '$').replace(/\\\)/g, '$').replace(/\\\[/g, '$$').replace(/\\\]/g, '$$');
-                        d.innerHTML = marked.parse(processed);
-                        out.scrollTop = out.scrollHeight;
-                        i++;
-                        setTimeout(typeWord, 20); 
-                    } else {
-                        activeHistory.push({role:'assistant', content:fullText});
-                        const tx = db.transaction("chats", "readwrite");
-                        tx.objectStore("chats").put({id: currentChatId, title: activeHistory[0].content.substring(0,25), history: activeHistory});
-                        renderSidebar();
-                        
-                        if (window.MathJax) {
-                            MathJax.typesetPromise([d]).catch((err) => console.log(err.message));
-                        }
+            for (let model of modelsToTry) {
+                try {
+                    const res = await fetch(`https://text.pollinations.ai/${encodeURIComponent(sysPrompt + "\n\n" + ctx)}?model=${model}`);
+                    if (!res.ok) continue; 
+                    
+                    const text = await res.text();
+                    
+                    if (text.includes('<html') || text.includes('Cloudflare') || text.includes('Error 524')) {
+                        console.warn(`Model ${model} timed out.`);
+                        continue; 
                     }
-                }
-                typeWord(); 
 
-            } catch (err) { 
+                    fullText = text;
+                    break;
+                } catch (e) {
+                    console.warn(`Model ${model} failed to connect.`);
+                }
+            }
+
+            if (!fullText) {
                 if (document.getElementById('temp-thinking')) document.getElementById('temp-thinking').remove();
                 const d = document.createElement('div'); 
                 d.className = "message ai-msg";
                 d.style.color = "#f44336";
-                d.textContent = "Error: The AI server is currently overloaded. Please try again in a few minutes.";
+                d.textContent = "Error: All AI servers are currently overloaded. Please try again in a minute.";
                 out.appendChild(d);
+                return;
             }
+                
+            document.getElementById('temp-thinking').remove();
+
+            const d = document.createElement('div'); 
+            d.className = "message ai-msg";
+            out.appendChild(d);
+
+            const words = fullText.match(/\S+|\s+/g) || [];
+            let currentText = "";
+            let i = 0;
+
+            function typeWord() {
+                if (i < words.length) {
+                    currentText += words[i];
+                    let processed = currentText.replace(/\\\(/g, '$').replace(/\\\)/g, '$').replace(/\\\[/g, '$$').replace(/\\\]/g, '$$');
+                    d.innerHTML = marked.parse(processed);
+                    out.scrollTop = out.scrollHeight;
+                    i++;
+                    setTimeout(typeWord, 20); 
+                } else {
+                    activeHistory.push({role:'assistant', content:fullText});
+                    const tx = db.transaction("chats", "readwrite");
+                    tx.objectStore("chats").put({id: currentChatId, title: activeHistory[0].content.substring(0,25), history: activeHistory});
+                    renderSidebar();
+                    
+                    if (window.MathJax) {
+                        MathJax.typesetPromise([d]).catch((err) => console.log(err.message));
+                    }
+                }
+            }
+            typeWord(); 
         }
 
         document.getElementById('send-btn').onclick = send;
