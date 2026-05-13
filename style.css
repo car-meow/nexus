@@ -336,13 +336,10 @@ body.app-is-dragging #game-list li:not(.dragging):not(.ugs-item):hover {
     overflow: hidden;
     text-overflow: ellipsis;
 }
-
-    border-color: #4d4f16 !important;
-}
-
 #game-list li.new-game {
     background-color: #2f972c !important;
     border-color: #1a5e18 !important;
+    color: white !important;
 }
 
 .sidebar-loading-text {
