@@ -63,16 +63,29 @@
 
         .trash-btn { font-size: 16px; opacity: 0.6; transition: opacity 0.2s; }
         .trash-btn:hover { opacity: 1; color: #f44336; }
+        
+        .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; align-items: center; justify-content: center; }
     </style>
 </head>
 <body>
     <header>
         <h1 onclick="location.href='index.html'">Toothbrush Larper</h1>
         <div class="controls">
+            <button id="settings-btn" class="save-btn" style="background-color: #555;">⚙️ API Settings</button>
             <button id="new-chat-btn" class="save-btn rainbow-btn">+ New Chat</button>
             <button onclick="location.href='index.html'" class="save-btn" style="background-color: #3d3d3d;">Back</button>
         </div>
     </header>
+    
+    <div id="settings-modal" class="overlay">
+        <div style="background:#1f1f1f; padding:35px; border-radius:20px; width:350px; border:1px solid #444; color:white; font-family:sans-serif;">
+            <h3 style="margin-bottom:20px;">AI API Settings</h3>
+            <p style="font-size:12px; color:#aaa; margin-bottom:15px; line-height:1.4;">By default, we use free fallback servers. If they are overloaded, you can provide your own free Groq API key for instant, ultra-fast responses.</p>
+            <input type="text" id="groq-key-input" placeholder="gsk_..." style="width:100%; padding:10px; background:#121212; border:1px solid #444; color:white; border-radius:8px; margin-bottom:15px;">
+            <button id="save-settings-btn" class="save-btn" style="background:#2E7D32; width:100%; padding:10px;">Save & Close</button>
+            <button onclick="document.getElementById('settings-modal').style.display='none'" class="save-btn" style="background:#444; width:100%; margin-top:10px; padding:10px;">Cancel</button>
+        </div>
+    </div>
     <main class="chat-layout">
         <aside class="chat-sidebar"><ul id="chat-list" class="chat-list"></ul></aside>
         <section class="chat-main">
@@ -162,29 +175,43 @@
             out.appendChild(thinkingBubble);
             out.scrollTop = out.scrollHeight;
 
-            // Model Failover System
-            const modelsToTry = ['search', 'mistral', 'llama', 'sur'];
+            const sysPrompt = "Use Markdown formatting. Use $...$ for inline math and $$...$$ for block math.";
             let fullText = null;
 
-            const sysPrompt = "Use Markdown formatting. Use $...$ for inline math and $$...$$ for block math.";
-            const ctx = activeHistory.slice(-4).map(m => `${m.role}: ${m.content}`).join('\n');
-
-            for (let model of modelsToTry) {
+            // 1. Try Groq API if Key Exists
+            const groqKey = localStorage.getItem('tb_groq_key');
+            if (groqKey) {
                 try {
-                    const res = await fetch(`https://text.pollinations.ai/${encodeURIComponent(sysPrompt + "\n\n" + ctx)}?model=${model}`);
-                    if (!res.ok) continue; 
-                    
-                    const text = await res.text();
-                    
-                    if (text.includes('<html') || text.includes('Cloudflare') || text.includes('Error 524')) {
-                        console.warn(`Model ${model} timed out.`);
-                        continue; 
+                    const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+                        method: "POST",
+                        headers: { "Authorization": `Bearer ${groqKey}`, "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            model: "llama3-8b-8192",
+                            messages: [{role: "system", content: sysPrompt}, ...activeHistory.slice(-4)]
+                        })
+                    });
+                    if (res.ok) {
+                        const data = await res.json();
+                        fullText = data.choices[0].message.content;
                     }
+                } catch(e) { console.warn("Groq fetch failed", e); }
+            }
 
-                    fullText = text;
-                    break;
-                } catch (e) {
-                    console.warn(`Model ${model} failed to connect.`);
+            // 2. Model Failover System
+            if (!fullText) {
+                const modelsToTry = ['openai', 'qwen', 'mistral', 'llama', 'search'];
+                const ctx = activeHistory.slice(-4).map(m => `${m.role}: ${m.content}`).join('\n');
+
+                for (let model of modelsToTry) {
+                    try {
+                        const res = await fetch(`https://text.pollinations.ai/${encodeURIComponent(sysPrompt + "\n\n" + ctx)}?model=${model}`);
+                        if (!res.ok) continue; 
+                        
+                        const text = await res.text();
+                        if (text.includes('<html') || text.includes('Cloudflare') || text.includes('Error 524')) { continue; }
+
+                        fullText = text; break;
+                    } catch (e) { console.warn(`Model ${model} failed to connect.`); }
                 }
             }
 
@@ -233,6 +260,18 @@
         document.getElementById('send-btn').onclick = send;
         document.getElementById('user-input').onkeypress = e => { if(e.key === 'Enter') send(); };
         document.getElementById('new-chat-btn').onclick = () => { currentChatId = null; activeHistory = []; document.getElementById('chat-output').innerHTML = ''; renderSidebar(); };
+        
+        // Settings Logic
+        document.getElementById('settings-btn').onclick = () => {
+            document.getElementById('groq-key-input').value = localStorage.getItem('tb_groq_key') || '';
+            document.getElementById('settings-modal').style.display = 'flex';
+        };
+        document.getElementById('save-settings-btn').onclick = () => {
+            const val = document.getElementById('groq-key-input').value.trim();
+            if (val) localStorage.setItem('tb_groq_key', val);
+            else localStorage.removeItem('tb_groq_key');
+            document.getElementById('settings-modal').style.display = 'none';
+        };
     </script>
 </body>
 </html>

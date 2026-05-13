@@ -11,13 +11,14 @@
         <nav class="top-nav">
         </nav>
 		
-		<!-- Put this directly under </nav> and above <div class="controls"> -->
         <div id="game-status-container" class="status-header" style="display: none; margin-right: auto;">
             <div id="game-status-dot" class="status-dot"></div>
             <span id="game-status-text" style="color: white; font-weight: bold;">Loading...</span>
         </div>
 		
         <div class="controls">
+            <button id="bookmark-active-btn" class="save-btn rainbow-btn" style="display: none;">Bookmark</button>
+            <div id="bookmark-spacer" style="width: 15px; display: none;"></div>
             <button id="cloak-btn" class="save-btn" style="background-color: #E91E63;">Fullscreen</button>
             
             <button onclick="location.href='pdf-stash.html'" class="save-btn" style="background-color: #F57C00;">Stash</button>

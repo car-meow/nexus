@@ -1,6 +1,85 @@
 const dbName = "GameStorageDB";
 let db, games =[], currentGame = null;
 const popupMuteSources = new Set();
+let recents = JSON.parse(localStorage.getItem('tb_recents') || '[]');
+
+function addToRecents(game) {
+    const limitStr = localStorage.getItem('tb_recents_limit') || '5';
+    let limit = limitStr === 'unlimited' ? Infinity : parseInt(limitStr);
+    
+    // Check if it's already a bookmark. If so, don't add to recents.
+    if (typeof buildBookmarkSourceKey === "function") {
+        const sourceKey = buildBookmarkSourceKey(game.url);
+        const bmId = buildBookmarkIdFromSourceKey(sourceKey);
+        if (games.some(g => g.id === bmId)) {
+            recents = recents.filter(r => r.url !== game.url);
+            localStorage.setItem('tb_recents', JSON.stringify(recents));
+            return;
+        }
+    }
+
+    recents = recents.filter(r => r.url !== game.url); // Remove existing to move to top
+    recents.unshift({ id: 'recent_' + Date.now(), title: game.title, type: 'url', url: game.url, isRecent: true });
+    
+    if (recents.length > limit) recents.length = limit;
+    localStorage.setItem('tb_recents', JSON.stringify(recents));
+    renderGameList();
+}
+
+async function addCurrentUGSToBookmarks(game) {
+    const sourceFile = game.url;
+    const sourceKey = buildBookmarkSourceKey(sourceFile);
+    const bmId = buildBookmarkIdFromSourceKey(sourceKey);
+    
+    const bmBtn = document.getElementById('bookmark-active-btn');
+    if (bmBtn) {
+        bmBtn.textContent = 'Adding...';
+        bmBtn.disabled = true;
+    }
+
+    try {
+        const response = await fetch(sourceFile);
+        if (!response.ok) throw new Error("Fetch failed");
+        const text = await response.text();
+        const reader = new FileReader();
+        reader.onload = async function (e) {
+            const dataUrl = e.target.result;
+            const newG = {
+                id: bmId,
+                sourceKey,
+                sourceFile,
+                title: game.title,
+                userRenamed: false,
+                type: 'file',
+                content: dataUrl
+            };
+            const tx = db.transaction("customGames", "readwrite");
+            tx.objectStore("customGames").put(newG);
+            games.push(newG);
+            saveGameOrder();
+            
+            // Remove from recents if it's there
+            recents = recents.filter(r => r.url !== sourceFile);
+            localStorage.setItem('tb_recents', JSON.stringify(recents));
+            
+            renderGameList();
+            
+            if (bmBtn) {
+                bmBtn.className = 'save-btn';
+                bmBtn.style.background = '#555';
+                bmBtn.textContent = 'Bookmarked';
+                bmBtn.style.cursor = 'default';
+            }
+        };
+        reader.readAsDataURL(new Blob([text], { type: 'text/html' }));
+    } catch (err) {
+        alert("Error fetching game for bookmarking.");
+        if (bmBtn) {
+            bmBtn.textContent = 'Bookmark';
+            bmBtn.disabled = false;
+        }
+    }
+}
 
 async function initDB() {
     return new Promise(r => {
@@ -102,7 +181,7 @@ function renderGameList() {
         if (game.id !== "ugs-stash") {
             const dragZone = document.createElement('div');
             dragZone.className = 'drag-handle-zone';
-            dragZone.innerHTML = '<img src="drag.svg" alt="drag">';
+            dragZone.innerHTML = '<img src="Assets/drag.svg" alt="drag">';
             dragZone.addEventListener('mousedown', (e) => {
                 e.stopPropagation();
                 e.preventDefault();
@@ -113,6 +192,24 @@ function renderGameList() {
 
         list.appendChild(li);
     });
+
+    if (recents.length > 0) {
+        const divider = document.createElement('div');
+        divider.style.borderBottom = '2px solid #555';
+        divider.style.margin = '10px 15px';
+        list.appendChild(divider);
+        
+        recents.forEach((game, i) => {
+            const li = document.createElement('li');
+            li.style.borderLeft = '3px solid #F57C00'; 
+            const t = document.createElement('span');
+            t.className = "game-title";
+            t.textContent = addSoftBreaks(game.title, 12);
+            li.onclick = () => loadGame(game);
+            li.appendChild(t);
+            list.appendChild(li);
+        });
+    }
 
     notifyStashBookmarkAvailability();
 }
@@ -272,6 +369,44 @@ function loadGame(game) {
     const statusContainer = document.getElementById('game-status-container');
     const statusDot = document.getElementById('game-status-dot');
     const statusText = document.getElementById('game-status-text');
+
+    const bmBtn = document.getElementById('bookmark-active-btn');
+    const spacer = document.getElementById('bookmark-spacer');
+    if (bmBtn && spacer) {
+        if (game.id && game.id.startsWith('ugs_')) {
+            bmBtn.style.display = 'inline-flex';
+            spacer.style.display = 'block';
+            
+            const sourceKey = buildBookmarkSourceKey(game.url);
+            const bmId = buildBookmarkIdFromSourceKey(sourceKey);
+            const isBookmarked = games.some(g => g.id === bmId);
+            
+            if (isBookmarked) {
+                bmBtn.className = 'save-btn';
+                bmBtn.style.background = '#555';
+                bmBtn.textContent = 'Bookmarked';
+                bmBtn.disabled = true;
+                bmBtn.style.cursor = 'default';
+                bmBtn.onclick = null;
+            } else {
+                bmBtn.className = 'save-btn rainbow-btn';
+                bmBtn.style.background = '';
+                bmBtn.textContent = 'Bookmark';
+                bmBtn.disabled = false;
+                bmBtn.style.cursor = 'pointer';
+                bmBtn.onclick = () => addCurrentUGSToBookmarks(game);
+            }
+            
+            addToRecents(game);
+        } else if (game.isRecent) {
+            bmBtn.style.display = 'none';
+            spacer.style.display = 'none';
+            addToRecents(game);
+        } else {
+            bmBtn.style.display = 'none';
+            spacer.style.display = 'none';
+        }
+    }
 
     // 1. UI Updates: Hide empty state, show frame, show emergency btn
     if (emptyState) emptyState.style.display = 'none';
@@ -551,14 +686,60 @@ if (proxyBtn) {
         icon.href = 'https://ssl.gstatic.com/images/branding/product/1x/drive_2020q4_32dp.png';
         win.document.head.appendChild(icon);
 
+        // Inject the proxy header
+        const header = win.document.createElement('div');
+        Object.assign(header.style, {
+            position: 'fixed', top: '0', left: '0', width: '100%', height: '40px',
+            backgroundColor: '#1f1f1f', color: '#fff', display: 'flex', alignItems: 'center',
+            padding: '0 15px', boxSizing: 'border-box', zIndex: '999999',
+            fontFamily: 'sans-serif', borderBottom: '1px solid #333'
+        });
+        
+        const backBtn = win.document.createElement('button');
+        backBtn.textContent = 'Back';
+        Object.assign(backBtn.style, {
+            backgroundColor: '#3d3d3d', color: 'white', border: '1px solid #555',
+            padding: '5px 15px', borderRadius: '4px', cursor: 'pointer', marginRight: '15px'
+        });
+        backBtn.onclick = () => win.close();
+        
+        const title = win.document.createElement('span');
+        title.textContent = 'Toothbrush Proxy';
+        title.style.fontWeight = 'bold';
+        title.style.marginRight = '15px';
+        
+        const subtext = win.document.createElement('span');
+        subtext.textContent = 'Press F2 to hide (Launcher+Refresh on Chromebook)';
+        subtext.style.fontSize = '12px';
+        subtext.style.color = '#aaa';
+
+        header.appendChild(backBtn);
+        header.appendChild(title);
+        header.appendChild(subtext);
+        win.document.body.appendChild(header);
+
         // Inject the proxy iframe
         const iframe = win.document.createElement('iframe');
         Object.assign(iframe.style, {
-            position: 'fixed', top: '0', left: '0', width: '100%', height: '100%',
+            position: 'fixed', top: '40px', left: '0', width: '100%', height: 'calc(100% - 40px)',
             border: 'none', margin: '0', padding: '0', overflow: 'hidden'
         });
         iframe.src = "https://trigonometry.scientificsense.org/"; // You can change this proxy link if it gets blocked
         win.document.body.appendChild(iframe);
+        
+        win.document.addEventListener('keydown', (e) => {
+            if (e.key === 'F2') {
+                if (header.style.display !== 'none') {
+                    header.style.display = 'none';
+                    iframe.style.top = '0';
+                    iframe.style.height = '100%';
+                } else {
+                    header.style.display = 'flex';
+                    iframe.style.top = '40px';
+                    iframe.style.height = 'calc(100% - 40px)';
+                }
+            }
+        });
         
         // Kill the original tab
         killMainTab();
@@ -598,3 +779,89 @@ if (importBtn) {
 }
 
 loadGames();
+
+// --- Interactive Tutorial Logic ---
+document.addEventListener('DOMContentLoaded', () => {
+    setTimeout(() => {
+        // Check if tutorial is running
+        const step = localStorage.getItem('tb_tutorial_step');
+        if (!step) return;
+
+        let cursor, popup;
+        function createTutElements(title, text) {
+            if(cursor) cursor.remove(); if(popup) popup.remove();
+            cursor = document.createElement('img');
+            cursor.src = 'Assets/cursor.png';
+            cursor.style = 'position:fixed; z-index:40001; pointer-events:none; width:45px; animation: tutBob 1s infinite alternate; filter: drop-shadow(0 0 10px white);';
+            
+            popup = document.createElement('div');
+            popup.style = 'position:fixed; z-index:40000; left:50%; top:20%; transform:translateX(-50%); border:4px solid transparent; border-image:linear-gradient(45deg,#ff0000,#00ffd5,#002bff,#ff00c8) 1; background:#111; color:white; font-weight:bold; box-shadow: 0 0 50px rgba(0,0,0,0.8); padding:20px; text-align:center; border-radius:12px; width:300px; pointer-events:auto;';
+            popup.innerHTML = `<h3 style="color:#2196F3; margin:0 0 10px 0;">${title}</h3><p style="color:#ccc; font-size:14px; margin:0;">${text}</p>`;
+            
+            document.body.appendChild(popup);
+            document.body.appendChild(cursor);
+
+            const style = document.createElement('style');
+            style.innerHTML = '@keyframes tutBob { from { transform: translate(-10px, 0); } to { transform: translate(10px, 15px); } }';
+            document.head.appendChild(style);
+        }
+
+        function pointAt(target, offsetX=0, offsetY=0) {
+            if(!target) return null;
+            const pos = () => {
+                const rect = target.getBoundingClientRect();
+                cursor.style.left = (rect.right + offsetX) + 'px';
+                cursor.style.top = (rect.bottom + offsetY) + 'px';
+            };
+            pos();
+            window.addEventListener('resize', pos);
+            return target;
+        }
+
+        if (step === '1') {
+            createTutElements('The Master Stash', 'This is where all your games live. Click the <b>Master Stash</b> button in the sidebar to open the library.');
+            const list = document.getElementById('game-list');
+            if (list && list.firstElementChild) {
+                const t = pointAt(list.firstElementChild, -20, -10);
+                if (t) {
+                    t.addEventListener('click', () => {
+                        localStorage.setItem('tb_tutorial_step', '2');
+                        setTimeout(() => location.reload(), 500);
+                    });
+                }
+            }
+        } else if (step === '2') {
+            createTutElements('Search & Play', 'Search for a game, or just click any game to launch it.');
+            cursor.style.display = 'none'; // Hide cursor, wait for game load
+            const originalLoadGame = window.loadGame;
+            window.loadGame = function(...args) {
+                localStorage.setItem('tb_tutorial_step', '3');
+                originalLoadGame.apply(this, args);
+                setTimeout(() => location.reload(), 500);
+            };
+        } else if (step === '3') {
+            createTutElements('Bookmarking', 'To save a game to your sidebar, click the <b>Bookmark</b> button. Click it now!');
+            const bm = document.getElementById('bookmark-active-btn');
+            if (bm && bm.style.display !== 'none') {
+                const t = pointAt(bm, -10, 10);
+                t.addEventListener('click', () => {
+                    localStorage.setItem('tb_tutorial_step', '4');
+                    setTimeout(() => location.reload(), 500);
+                });
+            } else {
+                // If it's already bookmarked or hidden, just skip
+                localStorage.setItem('tb_tutorial_step', '4');
+                setTimeout(() => location.reload(), 500);
+            }
+        } else if (step === '4') {
+            createTutElements('All Done!', 'You can also press F2 to hide the Proxy header. Have fun!');
+            popup.innerHTML += '<br><button id="end-tut" style="margin-top:15px; background:#2196F3; color:white; border:none; padding:8px 16px; border-radius:8px; cursor:pointer; font-weight:bold;">Finish Tutorial</button>';
+            cursor.style.display = 'none';
+            document.getElementById('end-tut').onclick = () => {
+                localStorage.setItem('tb_first_visit_done', 'true');
+                localStorage.removeItem('tb_tutorial_step');
+                popup.remove();
+            };
+        }
+    }, 800);
+});

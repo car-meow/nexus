@@ -102,7 +102,9 @@
 
     <main id="chat-room" style="display:none; flex-direction:column; flex:1; height: calc(100vh - 70px);">
         <div id="messages" style="flex:1; overflow-y:auto; padding:30px; display:flex; flex-direction:column;"></div>
-        <div style="padding:20px; background:#1f1f1f; display:flex; gap:12px; border-top:1px solid #333;">
+        <div style="padding:20px; background:#1f1f1f; display:flex; gap:12px; border-top:1px solid #333; align-items:center;">
+            <label for="img-upload" style="cursor:pointer; font-size:24px; color:#aaa; transition:color 0.2s;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#aaa'">🖼️</label>
+            <input type="file" id="img-upload" accept="image/*" style="display:none;">
             <input type="text" id="msg-input" placeholder="Type a message..." style="flex:1; background:#121212; border:1px solid #444; color:white; padding:15px; border-radius:12px; outline:none;">
             <button id="send-btn" class="save-btn" style="background:#2E7D32; padding:0 30px;">Send</button>
         </div>
@@ -450,6 +452,34 @@
             
             document.getElementById('msg-input').onkeypress = (e) => { if(e.key === 'Enter') document.getElementById('send-btn').click(); };
             document.getElementById('pin-entry').onkeypress = (e) => { if(e.key === 'Enter') document.getElementById('join-btn').click(); };
+            
+            // IMAGE UPLOAD LOGIC
+            document.getElementById('img-upload').onchange = function(e) {
+                const file = e.target.files[0];
+                if(!file) return;
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const img = new Image();
+                    img.onload = function() {
+                        const canvas = document.createElement('canvas');
+                        let width = img.width;
+                        let height = img.height;
+                        const MAX = 400;
+                        if (width > height && width > MAX) { height *= MAX / width; width = MAX; }
+                        else if (height > MAX) { width *= MAX / height; height = MAX; }
+                        canvas.width = width; canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+                        const b64 = canvas.toDataURL('image/jpeg', 0.6); // Compress to save payload size
+                        
+                        appendMessage(myName, myColor, `<img src="${b64}" style="max-width:100%; border-radius:8px; margin-top:5px; cursor:pointer;" onclick="window.open(this.src)">`, myUuid);
+                        publish({type: 'msg', name: myName, color: myColor, text: `<img src="${b64}" style="max-width:100%; border-radius:8px; margin-top:5px; cursor:pointer;" onclick="window.open(this.src)">`, uuid: myUuid});
+                    };
+                    img.src = event.target.result;
+                };
+                reader.readAsDataURL(file);
+                this.value = ''; // Reset
+            };
             
             document.getElementById('disband-btn').onclick = () => {
                 if(confirm("Disband Room?")) {

@@ -314,7 +314,7 @@ body {
 <div id="screen-border"></div>
 
 <!-- ========== MAGNET VISUAL ========== -->
-<img id="magnet-visual" src="magnet.png" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); width:150px; height:150px; opacity:0.3; z-index:800; pointer-events:none; animation: magnet-pulse 2s infinite alternate;">
+<img id="magnet-visual" src="Assets/magnet.png" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); width:150px; height:150px; opacity:0.3; z-index:800; pointer-events:none; animation: magnet-pulse 2s infinite alternate;">
 
 <!-- ========== COOKIE SPAWN LAYER ========== -->
 <div id="cookie-layer" style="position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:900;pointer-events:none;overflow:hidden;"></div>
@@ -360,7 +360,7 @@ body {
         <button id="btn-nav-ai" class="home-btn" style="background:#f57c00;">AI Chat</button>
         <button id="proxy-btn" class="home-btn" style="background:#00BCD4;">Proxy</button>
         <button id="btn-nav-chat" class="home-btn" style="background:#9C27B0;">Chat Room</button>
-        <button id="btn-nav-tut" class="home-btn" style="background:#5fc772;">Tutorial</button>
+        <button id="btn-nav-tut" class="home-btn" style="background:#5fc772;">Settings</button>
     </div>
 </div>
 
@@ -401,14 +401,7 @@ body {
     <div class="divine-letter" id="ine-part">INE</div>
 </div>
 
-<!-- ========== TUTORIAL OVERLAY ========== -->
-<div id="tut-overlay" class="overlay">
-    <div class="tut-box">
-        <h2 style="color:#2196F3;margin-bottom:12px;">Welcome!</h2>
-        <div style="color:#eee;margin-bottom:18px;line-height:1.6;">Welcome to Toothbrush! Click cookies floating across the screen to earn ₡ Cookie Bucks. Spend them in the Shop. Navigate to other tabs using the buttons below.</div>
-        <button class="hud-btn" id="tut-btn" style="background:#2196F3;width:100%;padding:12px;font-size:16px;">Got it!</button>
-    </div>
-</div>
+
 
 <!-- ========== DEBUG MENU ========== -->
 <div id="debug-menu" style="display:none; position:fixed; top:20px; left:20px; z-index:19000; background:rgba(0,0,0,0.9); border:2px solid lime; padding:15px; border-radius:10px; font-family:monospace; color:lime;">
@@ -421,5 +414,43 @@ body {
 <!-- ========== JAVASCRIPT ========== -->
 <script src="cookie-core.js"></script>
 <script src="cookie-engine.js"></script>
+<script>
+    // Simple Interactive Tutorial Logic
+    if (!localStorage.getItem('tb_first_visit_done') && !localStorage.getItem('tb_tutorial_step')) {
+        localStorage.setItem('tb_tutorial_step', '0');
+    }
+
+    if (localStorage.getItem('tb_tutorial_step') === '0') {
+        setTimeout(() => {
+            const cursor = document.createElement('img');
+            cursor.src = 'Assets/cursor.png';
+            cursor.style = 'position:fixed; z-index:40001; pointer-events:none; width:45px; animation: tutBob 1s infinite alternate; filter: drop-shadow(0 0 10px white);';
+            
+            const popup = document.createElement('div');
+            popup.className = 'tut-box';
+            popup.style = 'position:fixed; z-index:40000; left:50%; top:20%; transform:translateX(-50%); border:4px solid transparent; border-image:linear-gradient(45deg,#ff0000,#00ffd5,#002bff,#ff00c8) 1; background:#111; color:white; font-weight:bold; box-shadow: 0 0 50px rgba(0,0,0,0.8); padding:20px; text-align:center; width: 350px; border-radius: 12px;';
+            popup.innerHTML = '<h2 style="color:#2196F3; margin:0 0 10px 0;">Welcome to Toothbrush!</h2><p style="color:#ccc; font-size:14px; margin:0;">Click the <b>Games</b> button to enter the main app and begin your tour.</p>';
+            
+            document.body.appendChild(popup);
+            document.body.appendChild(cursor);
+
+            const style = document.createElement('style');
+            style.innerHTML = '@keyframes tutBob { from { transform: translate(-10px, 0); } to { transform: translate(10px, 15px); } }';
+            document.head.appendChild(style);
+
+            const target = document.getElementById('btn-nav-games');
+            const pos = () => {
+                const rect = target.getBoundingClientRect();
+                cursor.style.left = (rect.right - 20) + 'px';
+                cursor.style.top = (rect.bottom - 10) + 'px';
+            };
+            pos(); window.addEventListener('resize', pos);
+            
+            target.addEventListener('click', () => {
+                localStorage.setItem('tb_tutorial_step', '1');
+            });
+        }, 500);
+    }
+</script>
 </body>
 </html>

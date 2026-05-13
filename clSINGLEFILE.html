@@ -287,7 +287,8 @@
         let stashButtonIndex = 0;
         const bookmarkedSourceKeys = new Set();
         const EXTRA_STASH_APPS = [
-            { sourceFile: 'battlebeavers.html', displayName: 'battle beavers', letter: 'B' }
+            { sourceFile: 'battlebeavers.html', displayName: 'battle beavers', letter: 'B' },
+            { sourceFile: 'slope.html', displayName: 'Slope OG', letter: 'S' }
         ];
 
         const sectionsContainer = document.getElementById('sections-container');
@@ -422,6 +423,8 @@
 
         function applyStashSearch() {
             searchLayoutIsUpdating = true;
+            sectionsContainer.style.display = 'none'; // Prevent reflows
+            
             rememberSectionOrder();
             restoreSectionOrder();
             resetSearchStyles();
@@ -430,7 +433,8 @@
             if (!query) {
                 document.body.classList.remove('stash-searching');
                 noResultsMessage.style.display = 'none';
-                setTimeout(() => { searchLayoutIsUpdating = false; }, 0);
+                sectionsContainer.style.display = '';
+                searchLayoutIsUpdating = false;
                 return;
             }
 
@@ -440,10 +444,11 @@
 
             sections.forEach(section => {
                 let sectionHasMatch = false;
-                const wrappers = Array.from(section.querySelectorAll('.game-btn-wrapper'));
-
-                wrappers.forEach(wrapper => {
-                    const btn = wrapper.querySelector('input[type="button"]');
+                const wrappers = section.querySelectorAll('.game-btn-wrapper');
+                
+                for (let i = 0; i < wrappers.length; i++) {
+                    const wrapper = wrappers[i];
+                    const btn = wrapper.firstElementChild;
                     const searchName = btn ? (btn.dataset.searchName || btn.value.toLowerCase()) : '';
                     const isMatch = searchName.includes(query);
                     wrapper.style.display = isMatch ? '' : 'none';
@@ -452,21 +457,23 @@
                         sectionHasMatch = true;
                         matchCount++;
                     }
-                });
+                }
 
                 section.style.display = sectionHasMatch ? '' : 'none';
                 if (sectionHasMatch) matchingSections.push(section);
             });
 
             document.body.classList.add('stash-searching');
-            matchingSections.slice().reverse().forEach(section => {
-                sectionsContainer.insertBefore(section, sectionsContainer.firstChild);
-            });
+            const frag = document.createDocumentFragment();
+            matchingSections.forEach(section => frag.appendChild(section));
+            sectionsContainer.insertBefore(frag, sectionsContainer.firstChild);
 
             noResultsMessage.style.display = matchCount ? 'none' : 'block';
             searchResultsContainer.appendChild(noResultsMessage);
+            
+            sectionsContainer.style.display = '';
             window.scrollTo({ top: 0, behavior: 'auto' });
-            setTimeout(() => { searchLayoutIsUpdating = false; }, 0);
+            searchLayoutIsUpdating = false;
         }
 
         function queueStashSearch() {
@@ -586,22 +593,8 @@
                 wrapper.dataset.stashIndex = String(stashButtonIndex++);
                 wrapper.__stashHomeParent = btn.parentNode;
 
-                const bmBtn = document.createElement('button');
-                bmBtn.className = 'game-bookmark-btn';
-                bmBtn.dataset.sourceKey = btn.dataset.sourceKey;
-                bmBtn.title = 'Add to sidebar';
-                bmBtn.innerHTML = '<img src="bookmark.png">';
-
-                bmBtn.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    if (bmBtn.disabled) return;
-                    addBookmarkToSidebar(btn.dataset.originalValue || btn.value);
-                });
-
                 btn.parentNode.insertBefore(wrapper, btn);
                 wrapper.appendChild(btn);
-                wrapper.appendChild(bmBtn);
             });
 
             ensureExtraStashButtons(false);
@@ -616,44 +609,24 @@
     <script src="https://cdn.jsdelivr.net/gh/bubbls/ugs-singlefile@main/games.js"></script>
 	<script>
         document.addEventListener('DOMContentLoaded', () => {
-            // Find every link in the stash
-            const links = document.querySelectorAll('#sections-container a');
-            
-            links.forEach(link => {
-                link.addEventListener('click', (e) => {
-                    e.preventDefault(); // Stop the link from opening a new tab
-                    
+            // Intercept clicks on any link in the stash container using event delegation
+            document.getElementById('sections-container').addEventListener('click', (e) => {
+                const link = e.target.closest('a');
+                if (link) {
+                    e.preventDefault();
+                    e.stopPropagation();
                     const gameUrl = link.href;
-                    
-                    // Create an iframe to load the game inside this window
-                    const gameFrame = document.createElement('iframe');
-                    gameFrame.src = gameUrl;
-                    
-                    // Style it to fill the screen over the stash
-                    Object.assign(gameFrame.style, {
-                        position: 'fixed', top: '0', left: '0', 
-                        width: '100vw', height: '100vh', 
-                        border: 'none', zIndex: '99999', backgroundColor: '#000'
-                    });
-
-                    // Add a close button so the user can get back to the stash
-                    const closeBtn = document.createElement('button');
-                    closeBtn.textContent = "Close Game";
-                    Object.assign(closeBtn.style, {
-                        position: 'fixed', top: '10px', right: '20px',
-                        padding: '10px 15px', backgroundColor: '#B71C1C',
-                        color: 'white', border: 'none', borderRadius: '8px',
-                        cursor: 'pointer', zIndex: '100000', fontWeight: 'bold'
-                    });
-
-                    closeBtn.onclick = () => {
-                        gameFrame.remove();
-                        closeBtn.remove();
-                    };
-
-                    document.body.appendChild(gameFrame);
-                    document.body.appendChild(closeBtn);
-                });
+                    if (window.parent && window.parent !== window && typeof window.parent.loadGame === 'function') {
+                        window.parent.loadGame({
+                            id: 'ugs_' + encodeURIComponent(gameUrl),
+                            title: link.textContent.trim(),
+                            type: 'url',
+                            url: gameUrl
+                        });
+                    } else {
+                        window.location.href = gameUrl;
+                    }
+                }
             });
         });
     </script>
