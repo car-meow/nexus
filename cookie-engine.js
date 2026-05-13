@@ -647,13 +647,11 @@ window.addEventListener('DOMContentLoaded', () => {
     document.getElementById('btn-nav-games').onclick = () => { location.href = 'carmeow.html'; };
     document.getElementById('btn-nav-ai').onclick = () => { location.href = 'ai.html'; };
     document.getElementById('btn-nav-chat').onclick = () => { location.href = 'chat.html'; };
-    document.getElementById('btn-nav-tut').onclick = () => { location.href = 'settings.html'; };
+    document.getElementById('btn-nav-settings').onclick = () => { location.href = 'settings.html'; };
     document.getElementById('proxy-btn').onclick = () => {
-        const win = window.open('helios.html', '_blank');
-        if (!win) return alert("Pop-up Blocked!");
-        document.title = "New Tab"; document.body.innerHTML = "";
-        window.open('', '_self'); window.close();
-        setTimeout(() => { window.location.replace("about:blank"); }, 300);
+        const source = localStorage.getItem('tb_proxy_source') || 'gust.html';
+        const win = window.open(source, '_blank');
+        if (!win) return alert("Pop-up Blocked! Please allow pop-ups.");
     };
 
 
