@@ -73,15 +73,7 @@
             </label>
         </div>
         
-        <div class="setting-row">
-            <span class="setting-label">Recents Item Amounts:</span>
-            <select id="recents-limit" class="custom-select">
-                <option value="3">3</option>
-                <option value="5">5 (Default)</option>
-                <option value="10">10</option>
-                <option value="unlimited">Unlimited</option>
-            </select>
-        </div>
+
 
 
         <div class="setting-row">
@@ -101,20 +93,6 @@
         toggleCookie.checked = !cookieDisabled;
         toggleCookie.addEventListener('change', (e) => {
             localStorage.setItem('tb_cookie_disabled', !e.target.checked);
-        });
-
-        // Recents Limit
-        const recentsLimit = document.getElementById('recents-limit');
-        recentsLimit.value = localStorage.getItem('tb_recents_limit') || '5';
-        recentsLimit.addEventListener('change', (e) => {
-            localStorage.setItem('tb_recents_limit', e.target.value);
-            // Also trim the array if necessary
-            let limit = e.target.value === 'unlimited' ? Infinity : parseInt(e.target.value);
-            let recents = JSON.parse(localStorage.getItem('tb_recents') || '[]');
-            if (recents.length > limit) {
-                recents.length = limit;
-                localStorage.setItem('tb_recents', JSON.stringify(recents));
-            }
         });
 
         // Reset Stats

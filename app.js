@@ -34,8 +34,6 @@ async function addCurrentUGSToBookmarks(game) {
             games.push(newG);
             saveGameOrder();
             
-            saveGameOrder();
-            
             renderGameList();
             
             if (bmBtn) {
