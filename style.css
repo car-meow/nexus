@@ -18,7 +18,7 @@
     --zigzag-line: #1f1f1f;
     --input-bg: #121212;
     --modal-bg: #1f1f1f;
-    --title-color: #e0e0e0;
+    --title-color: #ffffff;
     --splash-color: #FFEB3B;
     --settings-row-bg: #222;
     --settings-label-color: #ffffff;
@@ -34,8 +34,8 @@ html.light-mode {
     --zigzag-line: #ffffff;
     --input-bg: #ffffff;
     --modal-bg: #ffffff;
-    --title-color: #222;
-    --splash-color: #6B6929;
+    --title-color: #333333;
+    --splash-color: #8a7b00;
     --settings-row-bg: #e0e0e0;
     --settings-label-color: #121212;
 }
@@ -336,6 +336,7 @@ body.app-is-dragging #game-list li:not(.dragging):not(.ugs-item):hover {
     overflow: hidden;
     text-overflow: ellipsis;
 }
+
 #game-list li.new-game {
     background-color: #2f972c !important;
     border-color: #1a5e18 !important;
@@ -346,11 +347,11 @@ body.app-is-dragging #game-list li:not(.dragging):not(.ugs-item):hover {
     color: #2f972c;
     font-weight: bold;
     font-style: italic;
-    text-shadow: 
-        -1px -1px 0 var(--panel-bg),  
-         1px -1px 0 var(--panel-bg),
-        -1px  1px 0 var(--panel-bg),
-         1px  1px 0 var(--panel-bg);
+    text-shadow:
+        -1px -1px 0 var(--panel-bg),
+        1px -1px 0 var(--panel-bg),
+        -1px 1px 0 var(--panel-bg),
+        1px 1px 0 var(--panel-bg);
     display: flex;
     align-items: center;
     gap: 10px;
@@ -366,8 +367,13 @@ body.app-is-dragging #game-list li:not(.dragging):not(.ugs-item):hover {
 }
 
 @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
 }
 
 #game-list li.new-game .game-title {

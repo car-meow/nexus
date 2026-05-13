@@ -37,7 +37,6 @@ function cacheDom() {
         discoveryPopup: document.getElementById('discovery-popup'),
         discTitle: document.getElementById('disc-title'),
         discLore: document.getElementById('disc-lore'),
-        muteBtn: document.getElementById('btn-mute'),
         splashText: document.getElementById('splash-text'),
         menuWrapper: document.getElementById('menu-items-wrapper'),
         hideMenuBtn: document.getElementById('hide-menu-btn'),
@@ -665,14 +664,8 @@ window.addEventListener('DOMContentLoaded', () => {
     document.getElementById('stats-close').onclick = (e) => { e.preventDefault(); DOM.statsModal.classList.remove('open'); };
     DOM.statsModal.onclick = (e) => { if (e.target === DOM.statsModal) DOM.statsModal.classList.remove('open'); };
 
-    DOM.muteBtn.onclick = (e) => {
-        e.preventDefault();
-        G.muted = !G.muted;
-        DOM.muteBtn.textContent = G.muted ? '🔇' : '🔊';
-        if (G.muted) { SFX.bgm.pause(); } else if (bgmStarted) { SFX.bgm.play().catch(() => { }); }
-        saveGame();
-    };
-    if (G.muted) DOM.muteBtn.textContent = '🔇';
+    if (G.muted && bgmStarted) SFX.bgm.pause();
+    else if (!G.muted && bgmStarted) SFX.bgm.play().catch(() => {});
 
     setInterval(autoTick, 100);
     setInterval(updateEffects, 1000);
@@ -691,7 +684,9 @@ window.addEventListener('DOMContentLoaded', () => {
 
 
         if (e.key === 'm' || e.key === 'M') {
-            DOM.muteBtn.click();
+            G.muted = !G.muted;
+            if (G.muted) { SFX.bgm.pause(); } else if (bgmStarted) { SFX.bgm.play().catch(() => { }); }
+            saveGame();
         }
         if (e.key === 'h' || e.key === 'H') {
             toggleMenus();
