@@ -4,6 +4,11 @@
 <meta charset="UTF-8">
 <title>New Tab</title>
 <link rel="stylesheet" href="style.css?v=42">
+<script>
+    if (localStorage.getItem('tb_cookie_disabled') === 'true') {
+        document.write('<style>#hud-top-left, .hud-bottom-right, #cookie-layer, #float-layer, #effects-container, #discovery-popup { display: none !important; }</style>');
+    }
+</script>
 <style>
 /* ============================================
    BODY & BACKGROUND
@@ -360,7 +365,7 @@ body {
         <button id="btn-nav-ai" class="home-btn" style="background:#f57c00;">AI Chat</button>
         <button id="proxy-btn" class="home-btn" style="background:#00BCD4;">Proxy</button>
         <button id="btn-nav-chat" class="home-btn" style="background:#9C27B0;">Chat Room</button>
-        <button id="btn-nav-tut" class="home-btn" style="background:#5fc772;">Settings</button>
+        <button id="btn-nav-tut" class="home-btn" style="background:#06402B;">Settings</button>
     </div>
 </div>
 
@@ -416,38 +421,45 @@ body {
 <script src="cookie-engine.js"></script>
 <script>
     // Simple Interactive Tutorial Logic
-    if (!localStorage.getItem('tb_first_visit_done') && !localStorage.getItem('tb_tutorial_step')) {
-        localStorage.setItem('tb_tutorial_step', '0');
+    if (!localStorage.getItem('tb_first_visit_done') && !localStorage.getItem('tb_tutorial_active')) {
+        localStorage.setItem('tb_tutorial_active', 'true');
     }
 
-    if (localStorage.getItem('tb_tutorial_step') === '0') {
+    if (localStorage.getItem('tb_tutorial_active') === 'true' && !localStorage.getItem('tb_tut_home_done')) {
         setTimeout(() => {
-            const cursor = document.createElement('img');
-            cursor.src = 'Assets/cursor.png';
-            cursor.style = 'position:fixed; z-index:40001; pointer-events:none; width:45px; animation: tutBob 1s infinite alternate; filter: drop-shadow(0 0 10px white);';
-            
             const popup = document.createElement('div');
-            popup.className = 'tut-box';
-            popup.style = 'position:fixed; z-index:40000; left:50%; top:20%; transform:translateX(-50%); border:4px solid transparent; border-image:linear-gradient(45deg,#ff0000,#00ffd5,#002bff,#ff00c8) 1; background:#111; color:white; font-weight:bold; box-shadow: 0 0 50px rgba(0,0,0,0.8); padding:20px; text-align:center; width: 350px; border-radius: 12px;';
-            popup.innerHTML = '<h2 style="color:#2196F3; margin:0 0 10px 0;">Welcome to Toothbrush!</h2><p style="color:#ccc; font-size:14px; margin:0;">Click the <b>Games</b> button to enter the main app and begin your tour.</p>';
+            popup.className = 'tut-box-rainbow';
+            popup.style.left = '50%';
+            popup.style.top = '50%';
+            popup.style.transform = 'translate(-50%, -50%)';
+            popup.style.width = '400px';
+            popup.innerHTML = `
+                <p style="color:#eee; font-size:16px; margin-bottom:15px; line-height:1.5;">
+                    Welcome to Toothbrush! This in-app tutorial will guide you along. Get started by clicking any main menu buttons! To skip this tutorial, check the box below. You can re-activate this tutorial in Settings.
+                </p>
+                <label style="display:flex; align-items:center; justify-content:center; gap:8px; cursor:pointer; font-size:14px; color:#aaa;">
+                    <input type="checkbox" id="skip-tut-cb" style="width:16px; height:16px; cursor:pointer;">
+                    Skip Tutorial
+                </label>
+            `;
             
             document.body.appendChild(popup);
-            document.body.appendChild(cursor);
 
-            const style = document.createElement('style');
-            style.innerHTML = '@keyframes tutBob { from { transform: translate(-10px, 0); } to { transform: translate(10px, 15px); } }';
-            document.head.appendChild(style);
+            document.getElementById('skip-tut-cb').addEventListener('change', (e) => {
+                if(e.target.checked) {
+                    localStorage.setItem('tb_first_visit_done', 'true');
+                    localStorage.removeItem('tb_tutorial_active');
+                    localStorage.setItem('tb_tut_home_done', 'true');
+                    popup.remove();
+                }
+            });
 
-            const target = document.getElementById('btn-nav-games');
-            const pos = () => {
-                const rect = target.getBoundingClientRect();
-                cursor.style.left = (rect.right - 20) + 'px';
-                cursor.style.top = (rect.bottom - 10) + 'px';
-            };
-            pos(); window.addEventListener('resize', pos);
-            
-            target.addEventListener('click', () => {
-                localStorage.setItem('tb_tutorial_step', '1');
+            // If they click any button, mark home as done
+            const buttons = document.querySelectorAll('.home-btn');
+            buttons.forEach(b => {
+                b.addEventListener('click', () => {
+                    localStorage.setItem('tb_tut_home_done', 'true');
+                });
             });
         }, 500);
     }

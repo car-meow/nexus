@@ -67,7 +67,7 @@
         .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; align-items: center; justify-content: center; }
     </style>
 </head>
-<body>
+<body class="chat-bg">
     <header>
         <h1 onclick="location.href='index.html'">Toothbrush Larper</h1>
         <div class="controls">
@@ -197,20 +197,26 @@
                 } catch(e) { console.warn("Groq fetch failed", e); }
             }
 
-            // 2. Model Failover System
+            // 2. Model Failover System using POST
             if (!fullText) {
                 const modelsToTry = ['openai', 'qwen', 'mistral', 'llama', 'search'];
-                const ctx = activeHistory.slice(-4).map(m => `${m.role}: ${m.content}`).join('\n');
-
                 for (let model of modelsToTry) {
                     try {
-                        const res = await fetch(`https://text.pollinations.ai/${encodeURIComponent(sysPrompt + "\n\n" + ctx)}?model=${model}`);
+                        const res = await fetch("https://text.pollinations.ai/openai", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({
+                                model: model,
+                                messages: [{role: "system", content: sysPrompt}, ...activeHistory.slice(-4)]
+                            })
+                        });
                         if (!res.ok) continue; 
                         
-                        const text = await res.text();
-                        if (text.includes('<html') || text.includes('Cloudflare') || text.includes('Error 524')) { continue; }
-
-                        fullText = text; break;
+                        const data = await res.json();
+                        if (data && data.choices && data.choices.length > 0) {
+                            fullText = data.choices[0].message.content;
+                            break;
+                        }
                     } catch (e) { console.warn(`Model ${model} failed to connect.`); }
                 }
             }
@@ -272,6 +278,30 @@
             else localStorage.removeItem('tb_groq_key');
             document.getElementById('settings-modal').style.display = 'none';
         };
+
+        // Interactive Tutorial for AI Chat
+        if (localStorage.getItem('tb_tutorial_active') === 'true' && !localStorage.getItem('tb_tut_ai_done')) {
+            setTimeout(() => {
+                const popup = document.createElement('div');
+                popup.className = 'tut-box-rainbow';
+                popup.style.left = '50%';
+                popup.style.top = '50%';
+                popup.style.transform = 'translate(-50%, -50%)';
+                popup.style.width = '400px';
+                popup.innerHTML = `
+                    <p style="color:#eee; font-size:16px; margin-bottom:15px; line-height:1.5;">
+                        This is your AI chatbot. It will save previous chats in the sidebar for you to go back to. You can delete chats by pressing the Trashcan icon on them in the sidebar. That's it!
+                    </p>
+                    <button id="close-ai-tut" class="save-btn rainbow-btn">Got it</button>
+                `;
+                document.body.appendChild(popup);
+
+                document.getElementById('close-ai-tut').addEventListener('click', () => {
+                    localStorage.setItem('tb_tut_ai_done', 'true');
+                    popup.remove();
+                });
+            }, 500);
+        }
     </script>
 </body>
 </html>

@@ -367,7 +367,6 @@ function loadGame(game) {
     const emergencyBtn = document.getElementById('emergency-open-btn');
     const emptyState = document.getElementById('empty-state');
     const statusContainer = document.getElementById('game-status-container');
-    const statusDot = document.getElementById('game-status-dot');
     const statusText = document.getElementById('game-status-text');
 
     const bmBtn = document.getElementById('bookmark-active-btn');
@@ -396,16 +395,19 @@ function loadGame(game) {
                 bmBtn.style.cursor = 'pointer';
                 bmBtn.onclick = () => addCurrentUGSToBookmarks(game);
             }
-            
-            addToRecents(game);
         } else if (game.isRecent) {
             bmBtn.style.display = 'none';
             spacer.style.display = 'none';
-            addToRecents(game);
         } else {
             bmBtn.style.display = 'none';
             spacer.style.display = 'none';
         }
+    }
+
+    if (game.id && game.id.startsWith('ugs_')) {
+        addToRecents(game);
+    } else if (game.isRecent) {
+        addToRecents(game);
     }
 
     // 1. UI Updates: Hide empty state, show frame, show emergency btn
