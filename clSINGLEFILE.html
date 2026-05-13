@@ -155,43 +155,6 @@
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
 
-        /* ---- Per-game bookmark icon ---- */
-        .game-bookmark-btn {
-            position: absolute;
-            right: 8px;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 32px;
-            height: 32px;
-            background: #478f49;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            opacity: 0;
-            transition: opacity 0.25s ease, transform 0.3s ease;
-            z-index: 2;
-            padding: 4px;
-        }
-
-        .game-btn-wrapper:hover .game-bookmark-btn {
-            opacity: 1;
-            transform: translateY(calc(-50% - 2px));
-        }
-
-        .game-btn-wrapper:active .game-bookmark-btn {
-            transform: translateY(-50%);
-        }
-
-        .game-bookmark-btn img {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-            pointer-events: none;
-        }
-
         /* ---- Search placeholder white + bold ---- */
         #searchInput::placeholder {
             color: white;
@@ -342,6 +305,11 @@
 
             if (btn.dataset.displayGuardAttached) return;
             btn.dataset.displayGuardAttached = 'true';
+            btn.onclick = (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                addBookmarkToSidebar(btn.dataset.originalValue);
+            };
             btn.addEventListener('click', () => {
                 const originalValue = btn.dataset.originalValue;
                 btn.value = originalValue;
@@ -413,7 +381,8 @@
                 btn.dataset.extraSource = extraApp.sourceFile;
                 btn.onclick = (e) => {
                     e.preventDefault();
-                    openExtraStashApp(extraApp);
+                    e.stopPropagation();
+                    addBookmarkToSidebar(btn.dataset.originalValue);
                 };
                 container.appendChild(btn);
                 prepareGameButton(btn);
@@ -567,7 +536,8 @@
                         title: getStashDisplayName(sourceFile, true),
                         userRenamed: false,
                         type: 'file',
-                        content: dataUrl
+                        content: dataUrl,
+                        isNew: true
                     };
 
                     const req = indexedDB.open("GameStorageDB", 1);
@@ -615,18 +585,6 @@
 
                 btn.parentNode.insertBefore(wrapper, btn);
                 wrapper.appendChild(btn);
-
-                // Create the bookmark icon button
-                const bmBtn = document.createElement('button');
-                bmBtn.className = 'game-bookmark-btn';
-                bmBtn.innerHTML = '🔖';
-                bmBtn.dataset.sourceKey = btn.dataset.sourceKey;
-                bmBtn.title = 'Add to sidebar';
-                bmBtn.onclick = (e) => {
-                    e.stopPropagation();
-                    addBookmarkToSidebar(btn.dataset.originalValue);
-                };
-                wrapper.appendChild(bmBtn);
             });
 
             ensureExtraStashButtons(false);

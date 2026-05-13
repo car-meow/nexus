@@ -2,56 +2,6 @@ const dbName = "GameStorageDB";
 let db, games =[], currentGame = null;
 const popupMuteSources = new Set();
 
-async function addCurrentUGSToBookmarks(game) {
-    const sourceFile = game.url;
-    const sourceKey = buildBookmarkSourceKey(sourceFile);
-    const bmId = buildBookmarkIdFromSourceKey(sourceKey);
-    
-    const bmBtn = document.getElementById('bookmark-active-btn');
-    if (bmBtn) {
-        bmBtn.textContent = 'Adding...';
-        bmBtn.disabled = true;
-    }
-
-    try {
-        const response = await fetch(sourceFile);
-        if (!response.ok) throw new Error("Fetch failed");
-        const text = await response.text();
-        const reader = new FileReader();
-        reader.onload = async function (e) {
-            const dataUrl = e.target.result;
-            const newG = {
-                id: bmId,
-                sourceKey,
-                sourceFile,
-                title: game.title,
-                userRenamed: false,
-                type: 'file',
-                content: dataUrl
-            };
-            const tx = db.transaction("customGames", "readwrite");
-            tx.objectStore("customGames").put(newG);
-            games.push(newG);
-            saveGameOrder();
-            
-            renderGameList();
-            
-            if (bmBtn) {
-                bmBtn.className = 'save-btn';
-                bmBtn.style.background = '#555';
-                bmBtn.textContent = 'Bookmarked';
-                bmBtn.style.cursor = 'default';
-            }
-        };
-        reader.readAsDataURL(new Blob([text], { type: 'text/html' }));
-    } catch (err) {
-        alert("Error fetching game for bookmarking.");
-        if (bmBtn) {
-            bmBtn.textContent = 'Bookmark';
-            bmBtn.disabled = false;
-        }
-    }
-}
 
 async function initDB() {
     return new Promise(r => {
@@ -125,13 +75,22 @@ function renderGameList() {
         const li = document.createElement('li');
         
         if (game.id === "ugs-stash") li.classList.add('ugs-item');
+        if (game.isNew) li.classList.add('new-game');
         
         const t = document.createElement('span');
         t.className = "game-title";
         if (game.id === "ugs-stash") t.classList.add("game-title-single-line");
         t.textContent = game.id === "ugs-stash" ? getSidebarTitle(game) : addSoftBreaks(getSidebarTitle(game), 12);
         
-        li.onclick = () => loadGame(game);
+        li.onclick = () => {
+            if (game.isNew) {
+                game.isNew = false;
+                const tx = db.transaction("customGames", "readwrite");
+                tx.objectStore("customGames").put(game);
+                li.classList.remove('new-game');
+            }
+            loadGame(game);
+        };
         li.appendChild(t);
 
         if (isUserManagedGame(game)) {
@@ -322,38 +281,6 @@ function loadGame(game) {
     const emptyState = document.getElementById('empty-state');
     const statusContainer = document.getElementById('game-status-container');
     const statusText = document.getElementById('game-status-text');
-
-    const bmBtn = document.getElementById('bookmark-active-btn');
-    const spacer = document.getElementById('bookmark-spacer');
-    if (bmBtn && spacer) {
-        if (game.id && game.id.startsWith('ugs_')) {
-            bmBtn.style.display = 'inline-flex';
-            spacer.style.display = 'block';
-            
-            const sourceKey = buildBookmarkSourceKey(game.url);
-            const bmId = buildBookmarkIdFromSourceKey(sourceKey);
-            const isBookmarked = games.some(g => g.id === bmId);
-            
-            if (isBookmarked) {
-                bmBtn.className = 'save-btn';
-                bmBtn.style.background = '#555';
-                bmBtn.textContent = 'Bookmarked';
-                bmBtn.disabled = true;
-                bmBtn.style.cursor = 'default';
-                bmBtn.onclick = null;
-            } else {
-                bmBtn.className = 'save-btn rainbow-btn';
-                bmBtn.style.background = '';
-                bmBtn.textContent = 'Bookmark';
-                bmBtn.disabled = false;
-                bmBtn.style.cursor = 'pointer';
-                bmBtn.onclick = () => addCurrentUGSToBookmarks(game);
-            }
-        } else {
-            bmBtn.style.display = 'none';
-            spacer.style.display = 'none';
-        }
-    }
 
     // 1. UI Updates: Hide empty state, show frame, show emergency btn
     if (emptyState) emptyState.style.display = 'none';
