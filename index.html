@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <title>New Tab</title>
-<link rel="stylesheet" href="style.css?v=48">
+<link rel="stylesheet" href="style.css?v=49">
     <script>
         (function() {
             const theme = localStorage.getItem('tb_theme') || 'dark';
@@ -296,18 +296,22 @@ body {
     position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
     background: rgba(0,0,0,0); z-index: 15000; display: none;
     align-items: center; justify-content: center; pointer-events: none;
-    transition: background 0.5s;
+    gap: 34px; transition: background 0.5s;
 }
 .divine-letter {
-    font-size: 140px; font-weight: 900; position: absolute; top: 50%; margin-top: -70px;
+    font-size: 140px; font-weight: 900; position: relative; line-height: 0.9;
     color: #FFD700; -webkit-text-stroke: 8px #bf360c;
     filter: drop-shadow(0 0 20px #000) drop-shadow(0 0 40px rgba(255,215,0,0.5));
-    transition: transform 0.6s cubic-bezier(0.175,0.885,0.32,1.275);
+    transition: transform 0.7s cubic-bezier(0.16,1,0.3,1);
 }
-#div-part { right: 50%; transform: translateX(-150vw); }
-#ine-part { left: 50%; transform: translateX(150vw); }
-#div-part.slam { transform: translateX(-12px); }
-#ine-part.slam { transform: translateX(12px); }
+#div-part { transform: translateX(-150vw); }
+#ine-part { transform: translateX(150vw); }
+#div-part.slam, #ine-part.slam { transform: translateX(0); }
+
+@media (max-width: 560px) {
+    #divine-overlay { gap: 26px; }
+    .divine-letter { font-size: 96px; -webkit-text-stroke: 6px #bf360c; }
+}
 
 @keyframes shake { 0%,100%{transform:translate(0,0)} 25%{transform:translate(-5px,5px)} 50%{transform:translate(5px,-5px)} 75%{transform:translate(-5px,-5px)} }
 .camera-shake { animation: shake 0.1s infinite !important; }
@@ -420,5 +424,5 @@ body {
 
 <!-- ========== JAVASCRIPT ========== -->
 <script src="cookie-core.js?v=48"></script>
-<script src="cookie-engine.js?v=48"></script></body>
+<script src="cookie-engine.js?v=49"></script></body>
 </html>
