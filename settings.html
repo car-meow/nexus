@@ -19,7 +19,7 @@
         }
         .modal-box {
             background: var(--modal-bg); padding: 24px; border-radius: 18px;
-            width: 500px; max-width: 95vw;
+            width: 560px; max-width: 95vw; max-height: 90vh; overflow-y: auto;
             border: 2px solid #5fc772; text-align: center;
             box-shadow: 0 0 60px rgba(0,0,0,0.9);
         }
@@ -27,9 +27,15 @@
         .setting-row {
             display: flex; justify-content: space-between; align-items: center;
             background: var(--settings-row-bg); padding: 12px 18px; border-radius: 12px; border: 1px solid var(--border-color);
-            margin-bottom: 12px;
+            margin-bottom: 12px; gap: 16px; text-align: left; flex-wrap: wrap;
         }
         .setting-label { color: var(--settings-label-color); font-size: 16px; font-weight: bold; }
+        .setting-section-title {
+            color: var(--settings-label-color); font-size: 19px; font-weight: 800;
+            margin: 18px 0 10px; text-align: left;
+        }
+        .setting-label-group { display: flex; flex-direction: column; gap: 3px; }
+        .setting-hint { color: var(--muted-text, #8f8f8f); font-size: 12px; font-weight: 600; }
         
         /* Toggle Switch */
         .toggle-switch {
@@ -58,7 +64,9 @@
         .custom-select {
             background: var(--input-bg); color: var(--text-color); border: 1px solid var(--border-color);
             padding: 6px 12px; border-radius: 8px; font-weight: bold; cursor: pointer;
+            min-width: 180px; max-width: 240px;
         }
+        .custom-select:disabled { opacity: 0.65; cursor: not-allowed; }
     </style>
 </head>
 <body>
@@ -82,7 +90,7 @@
         </div>
 
         <div class="setting-row">
-            <span class="setting-label">Mute Sounds</span>
+            <span class="setting-label">Sounds</span>
             <label class="toggle-switch">
                 <input type="checkbox" id="toggle-mute">
                 <span class="slider"></span>
@@ -96,6 +104,35 @@
                 <option value="gust.html">Gust</option>
                 <option value="helios.html">Helios</option>
             </select>
+        </div>
+
+        <div class="setting-section-title">Media Settings</div>
+
+        <div class="setting-row">
+            <div class="setting-label-group">
+                <span class="setting-label">Provider</span>
+                <span class="setting-hint">Used when Auto-Select is off.</span>
+            </div>
+            <select id="select-media-source" class="custom-select"></select>
+        </div>
+
+        <div class="setting-row">
+            <span class="setting-label">Auto-Select</span>
+            <label class="toggle-switch">
+                <input type="checkbox" id="toggle-media-auto">
+                <span class="slider"></span>
+            </label>
+        </div>
+
+        <div class="setting-row">
+            <div class="setting-label-group">
+                <span class="setting-label">Shield</span>
+                <span class="setting-hint">Blocks provider popups and redirects.</span>
+            </div>
+            <label class="toggle-switch">
+                <input type="checkbox" id="toggle-media-shield">
+                <span class="slider"></span>
+            </label>
         </div>
 
         <div class="setting-row">
@@ -130,6 +167,86 @@
             localStorage.setItem('tb_proxy_source', e.target.value);
         });
 
+        // Media Settings
+        const MEDIA_SOURCE_KEY = 'tb_media_source';
+        const OLD_MEDIA_SOURCE_KEY = 'tb_default_server';
+        const MEDIA_AUTO_KEY = 'tb_media_auto_choose';
+        const MEDIA_REMOVE_SHIELD_KEY = 'tb_media_remove_shield';
+        const MEDIA_PROVIDERS = [
+            { id: 'cinemaos', name: 'CinemaOS', quality: 98, captions: 92, reliability: 98, popupRisk: 10 },
+            { id: 'vidlink', name: 'VidLink', quality: 96, captions: 92, reliability: 92, popupRisk: 16 },
+            { id: 'ezvidapi', name: 'EZVidAPI', quality: 85, captions: 80, reliability: 76, popupRisk: 22 },
+            { id: 'ztstream', name: 'ZTStream', quality: 85, captions: 76, reliability: 78, popupRisk: 22 },
+            { id: 'autoembed', name: 'AutoEmbed', quality: 80, captions: 66, reliability: 72, popupRisk: 36 },
+            { id: 'twoembed', name: '2Embed', quality: 68, captions: 48, reliability: 62, popupRisk: 64 }
+        ];
+
+        const mediaSource = document.getElementById('select-media-source');
+        const mediaAuto = document.getElementById('toggle-media-auto');
+        const mediaShield = document.getElementById('toggle-media-shield');
+
+        function mediaProviderScore(provider) {
+            return (provider.quality * 5) + (provider.captions * 4) + (provider.reliability * 2) - (provider.popupRisk * 1.25);
+        }
+
+        function findMediaProvider(providerId) {
+            return MEDIA_PROVIDERS.find((provider) => provider.id === providerId);
+        }
+
+        function chooseBestMediaProvider() {
+            return MEDIA_PROVIDERS.slice().sort((a, b) => mediaProviderScore(b) - mediaProviderScore(a))[0];
+        }
+
+        function getManualMediaProvider() {
+            const saved = localStorage.getItem(MEDIA_SOURCE_KEY) || localStorage.getItem(OLD_MEDIA_SOURCE_KEY) || 'cinemaos';
+            return findMediaProvider(saved) || chooseBestMediaProvider();
+        }
+
+        function saveManualMediaProvider(providerId) {
+            localStorage.setItem(MEDIA_SOURCE_KEY, providerId);
+            localStorage.setItem(OLD_MEDIA_SOURCE_KEY, providerId);
+        }
+
+        function renderMediaSettings() {
+            const autoSelect = localStorage.getItem(MEDIA_AUTO_KEY) !== 'false';
+            const shieldEnabled = localStorage.getItem(MEDIA_REMOVE_SHIELD_KEY) !== 'true';
+            const manualProvider = getManualMediaProvider();
+            const effectiveProvider = autoSelect ? chooseBestMediaProvider() : manualProvider;
+
+            mediaSource.innerHTML = '';
+            MEDIA_PROVIDERS.forEach((provider) => {
+                const option = document.createElement('option');
+                option.value = provider.id;
+                option.textContent = provider.name;
+                mediaSource.appendChild(option);
+            });
+            mediaSource.value = effectiveProvider.id;
+            mediaSource.disabled = autoSelect;
+            mediaAuto.checked = autoSelect;
+            mediaShield.checked = shieldEnabled;
+        }
+
+        mediaSource.addEventListener('change', (e) => {
+            saveManualMediaProvider(e.target.value);
+            renderMediaSettings();
+        });
+
+        mediaAuto.addEventListener('change', (e) => {
+            localStorage.setItem(MEDIA_AUTO_KEY, e.target.checked ? 'true' : 'false');
+            const savedProvider = localStorage.getItem(MEDIA_SOURCE_KEY) || localStorage.getItem(OLD_MEDIA_SOURCE_KEY);
+            if (!e.target.checked && !findMediaProvider(savedProvider)) {
+                saveManualMediaProvider(chooseBestMediaProvider().id);
+            }
+            renderMediaSettings();
+        });
+
+        mediaShield.addEventListener('change', (e) => {
+            localStorage.setItem(MEDIA_REMOVE_SHIELD_KEY, e.target.checked ? 'false' : 'true');
+            renderMediaSettings();
+        });
+
+        renderMediaSettings();
+
         // Cookie Game Toggle
         const toggleCookie = document.getElementById('toggle-cookie-game');
         const cookieDisabled = localStorage.getItem('tb_cookie_disabled') === 'true';
@@ -138,7 +255,7 @@
             localStorage.setItem('tb_cookie_disabled', !e.target.checked);
         });
 
-        // Mute Toggle
+        // Sounds Toggle
         const toggleMute = document.getElementById('toggle-mute');
         function getMuted() {
             try {
@@ -158,9 +275,9 @@
                 localStorage.setItem('tb_cookie_save', JSON.stringify(d));
             } catch(e) {}
         }
-        toggleMute.checked = getMuted();
+        toggleMute.checked = !getMuted();
         toggleMute.addEventListener('change', (e) => {
-            setMuted(e.target.checked);
+            setMuted(!e.target.checked);
         });
 
         // Reset Stats

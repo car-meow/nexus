@@ -55,8 +55,24 @@ let isShowingDiscovery = false;
 
 // Listen to localstorage updates so if another tab clears data, we reset.
 window.addEventListener('storage', (e) => {
-    if (e.key === 'tb_cookie_save' && !e.newValue) {
-        window.location.reload();
+    if (e.key === 'tb_cookie_save') {
+        if (!e.newValue) {
+            window.location.reload();
+            return;
+        }
+
+        try {
+            const data = JSON.parse(e.newValue);
+            const muted = data.muted || false;
+            if (G.muted !== muted) {
+                G.muted = muted;
+                if (G.muted) {
+                    if (SFX.bgm) SFX.bgm.pause();
+                } else if (bgmStarted && SFX.bgm) {
+                    SFX.bgm.play().catch(() => { });
+                }
+            }
+        } catch (err) { }
     }
 });
 
