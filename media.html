@@ -554,18 +554,12 @@
     return null;
   };
 
-  window.addEventListener('beforeunload', function(e) {
-    if (!removeShieldUnsafe && !userWantsToLeave) {
-      e.preventDefault();
-      e.returnValue = 'A player source tried to leave this page.';
-      return e.returnValue;
-    }
-  });
+  // Native sandboxing handles top navigation blocks natively, bypassing the need for a beforeunload trap.
 
   const PROVIDERS = [
     { id: 'cinemaos', name: 'CinemaOS', quality: 98, captions: 92, reliability: 98, popupRisk: 10,
-      movie: function(sid) { return 'https://55gms.app/embed.html#https://cinemaos.tech/player/' + sid + '?title=false'; },
-      tv: function(sid, s, e) { return 'https://55gms.app/embed.html#https://cinemaos.tech/player/' + sid + '/' + s + '/' + e; } },
+      movie: function(sid) { return 'https://cinemaos.tech/player/' + sid + '?title=false'; },
+      tv: function(sid, s, e) { return 'https://cinemaos.tech/player/' + sid + '/' + s + '/' + e; } },
     { id: 'vidlink', name: 'VidLink', quality: 96, captions: 92, reliability: 92, popupRisk: 16,
       movie: function(sid) { return 'https://vidlink.pro/movie/' + sid + '?primaryColor=a244b2&autoplay=1'; },
       tv: function(sid, s, e) { return 'https://vidlink.pro/tv/' + sid + '/' + s + '/' + e + '?primaryColor=a244b2&autoplay=1'; } },
@@ -632,6 +626,13 @@
   function updatePlayer() {
     var frame = document.getElementById('main-player');
     if (!frame) return;
+    
+    if (removeShieldUnsafe) {
+      frame.removeAttribute('sandbox');
+    } else {
+      frame.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-forms allow-presentation');
+    }
+    
     frame.src = 'about:blank';
     setTimeout(function() {
       frame.src = embedUrl();

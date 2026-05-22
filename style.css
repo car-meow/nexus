@@ -1012,21 +1012,23 @@ iframe {
     align-items: center;
     justify-content: center;
     pointer-events: none;
-    gap: 34px;
+    gap: clamp(10px, 2.5vw, 34px);
     transition: background 0.5s;
+    overflow: hidden;
 }
 
 .divine-letter {
-    font-size: 150px;
+    font-size: clamp(48px, 10vw, 150px);
     font-weight: 900;
     position: relative;
     line-height: 0.9;
     background: linear-gradient(to bottom, #FAA00F, #EDD11D);
     -webkit-background-clip: text;
     -webkit-text-fill-color: #FFD700;
-    -webkit-text-stroke: 10px #bf360c;
+    -webkit-text-stroke: clamp(3px, 0.6vw, 10px) #bf360c;
     filter: drop-shadow(0 0 20px black);
     transition: transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+    white-space: nowrap;
 }
 
 #div-part {
@@ -1044,12 +1046,7 @@ iframe {
 
 @media (max-width: 560px) {
     #divine-overlay {
-        gap: 26px;
-    }
-
-    .divine-letter {
-        font-size: 96px;
-        -webkit-text-stroke: 6px #bf360c;
+        gap: clamp(8px, 2vw, 20px);
     }
 }
 

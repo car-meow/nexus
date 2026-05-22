@@ -534,43 +534,123 @@ if (cloakBtn) {
 const exportBtn = document.getElementById('export-btn');
 if (exportBtn) {
     exportBtn.onclick = async () => {
-        const tx = db.transaction('customGames', 'readonly');
-        const customGames = await new Promise(r => {
-            const req = tx.objectStore('customGames').getAll();
-            req.onsuccess = () => r(req.result);
-        });
+        const originalText = exportBtn.textContent;
+        exportBtn.disabled = true;
+        exportBtn.textContent = "Saving...";
 
-        const allSaves = {};
-        for (let i = 0; i < localStorage.length; i++) {
-            const key = localStorage.key(i);
-            allSaves[key] = localStorage.getItem(key);
-        }
-
-        const idbData = {};
-        const dbs = await window.indexedDB.databases();
-        for (let dbInfo of dbs) {
-            if (dbInfo.name === "GameStorageDB") continue; 
-            const gameDB = await new Promise(res => {
-                const req = indexedDB.open(dbInfo.name);
-                req.onsuccess = () => res(req.result);
-            });
-            const dbContent = {};
-            for (let storeName of gameDB.objectStoreNames) {
-                const storeTx = gameDB.transaction(storeName, 'readonly');
-                dbContent[storeName] = await new Promise(res => {
-                    storeTx.objectStore(storeName).getAll().onsuccess = e => res(e.target.result);
+        let fileHandle = null;
+        try {
+            // Try to open the modern Save File Picker instantly to capture user gesture
+            if ('showSaveFilePicker' in window) {
+                fileHandle = await window.showSaveFilePicker({
+                    suggestedName: 'toothbrush_backup.json',
+                    types: [{
+                        description: 'JSON Backup Files',
+                        accept: {
+                            'application/json': ['.json']
+                        }
+                    }]
                 });
             }
-            idbData[dbInfo.name] = dbContent;
-            gameDB.close();
+        } catch (err) {
+            if (err.name === 'AbortError') {
+                // User cancelled the file picker dialog
+                exportBtn.disabled = false;
+                exportBtn.textContent = originalText;
+                return;
+            }
+            console.warn("File System Access API failed or unsupported:", err);
         }
 
-        const backupData = { saves: allSaves, indexedData: idbData, games: customGames };
-        const blob = new Blob([JSON.stringify(backupData)], { type: 'application/json' });
-        const a = document.createElement('a');
-        a.href = URL.createObjectURL(blob);
-        a.download = 'toothbrush_backup.json';
-        a.click();
+        try {
+            // Gather custom games
+            const tx = db.transaction('customGames', 'readonly');
+            const customGames = await new Promise(r => {
+                const req = tx.objectStore('customGames').getAll();
+                req.onsuccess = () => r(req.result);
+                req.onerror = () => r([]);
+            });
+
+            // Gather all saves from localStorage
+            const allSaves = {};
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                allSaves[key] = localStorage.getItem(key);
+            }
+
+            // Gather IndexedDB databases
+            const idbData = {};
+            if (window.indexedDB.databases) {
+                const dbs = await window.indexedDB.databases();
+                for (let dbInfo of dbs) {
+                    if (dbInfo.name === "GameStorageDB") continue;
+                    
+                    const gameDB = await new Promise(res => {
+                        const req = indexedDB.open(dbInfo.name);
+                        req.onsuccess = () => res(req.result);
+                        req.onerror = () => res(null);
+                        req.onblocked = () => res(null);
+                    });
+                    if (!gameDB) continue;
+
+                    const dbContent = {};
+                    for (let storeName of gameDB.objectStoreNames) {
+                        const storeTx = gameDB.transaction(storeName, 'readonly');
+                        const store = storeTx.objectStore(storeName);
+                        
+                        // Extract schema metadata
+                        const keyPath = store.keyPath;
+                        const autoIncrement = store.autoIncrement;
+
+                        // Use a cursor to preserve both key and value
+                        const records = [];
+                        await new Promise(res => {
+                            const reqCursor = store.openCursor();
+                            reqCursor.onsuccess = e => {
+                                const cursor = e.target.result;
+                                if (cursor) {
+                                    records.push({ key: cursor.key, value: cursor.value });
+                                    cursor.continue();
+                                } else {
+                                    res();
+                                }
+                            };
+                            reqCursor.onerror = () => res();
+                        });
+
+                        dbContent[storeName] = {
+                            keyPath: keyPath,
+                            autoIncrement: autoIncrement,
+                            records: records
+                        };
+                    }
+                    idbData[dbInfo.name] = dbContent;
+                    gameDB.close();
+                }
+            }
+
+            const backupData = { saves: allSaves, indexedData: idbData, games: customGames };
+            const jsonStr = JSON.stringify(backupData);
+
+            if (fileHandle) {
+                const writable = await fileHandle.createWritable();
+                await writable.write(jsonStr);
+                await writable.close();
+            } else {
+                // Fallback to traditional link download
+                const blob = new Blob([jsonStr], { type: 'application/json' });
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(blob);
+                a.download = 'toothbrush_backup.json';
+                a.click();
+            }
+        } catch (e) {
+            console.error("Backup failed:", e);
+            alert("Backup failed: " + e.message);
+        } finally {
+            exportBtn.disabled = false;
+            exportBtn.textContent = originalText;
+        }
     };
 }
 
@@ -650,32 +730,135 @@ if (proxyBtn) {
 const importBtn = document.getElementById('import-btn');
 if (importBtn) {
     importBtn.onchange = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
         const reader = new FileReader();
         reader.onload = async (ev) => {
-            const data = JSON.parse(ev.target.result);
-            if (data.saves) Object.keys(data.saves).forEach(k => localStorage.setItem(k, data.saves[k]));
-            if (data.games) {
-                const tx = db.transaction('customGames', 'readwrite');
-                data.games.forEach(g => tx.objectStore('customGames').put(g));
+            let data;
+            try {
+                data = JSON.parse(ev.target.result);
+            } catch (err) {
+                alert("Invalid backup file: " + err.message);
+                return;
             }
-            if (data.indexedData) {
-                for (let dbName in data.indexedData) {
-                    const dbRequest = indexedDB.open(dbName);
-                    dbRequest.onupgradeneeded = (event) => {
-                        for (let storeName in data.indexedData[dbName]) { event.target.result.createObjectStore(storeName); }
-                    };
-                    const openedDB = await new Promise(res => { dbRequest.onsuccess = () => res(dbRequest.result); });
-                    for (let storeName in data.indexedData[dbName]) {
-                        const storeTx = openedDB.transaction(storeName, 'readwrite');
-                        data.indexedData[dbName][storeName].forEach(item => storeTx.objectStore(storeName).put(item));
-                    }
-                    openedDB.close();
+
+            try {
+                // Restore localStorage
+                if (data.saves) {
+                    Object.keys(data.saves).forEach(k => localStorage.setItem(k, data.saves[k]));
                 }
+
+                // Restore custom games list
+                if (data.games) {
+                    const tx = db.transaction('customGames', 'readwrite');
+                    data.games.forEach(g => tx.objectStore('customGames').put(g));
+                    await new Promise(resolve => {
+                        tx.oncomplete = resolve;
+                        tx.onerror = resolve;
+                    });
+                }
+
+                // Restore IndexedDB databases
+                if (data.indexedData) {
+                    for (let dbName in data.indexedData) {
+                        // Delete the database first to wipe any existing schemas/records cleanly
+                        await new Promise((resolve) => {
+                            const reqDel = indexedDB.deleteDatabase(dbName);
+                            reqDel.onsuccess = () => resolve();
+                            reqDel.onerror = () => resolve();
+                            reqDel.onblocked = () => {
+                                console.warn(`Deletion of ${dbName} blocked, continuing...`);
+                                resolve();
+                            };
+                        });
+
+                        // Recreate the database with correct schemas in onupgradeneeded
+                        const dbRequest = indexedDB.open(dbName, 1);
+                        dbRequest.onupgradeneeded = (event) => {
+                            const targetDB = event.target.result;
+                            for (let storeName in data.indexedData[dbName]) {
+                                const storeInfo = data.indexedData[dbName][storeName];
+                                const options = {};
+                                
+                                if (storeInfo && !Array.isArray(storeInfo)) {
+                                    if (storeInfo.keyPath !== undefined && storeInfo.keyPath !== null) {
+                                        options.keyPath = storeInfo.keyPath;
+                                    }
+                                    if (storeInfo.autoIncrement !== undefined) {
+                                        options.autoIncrement = storeInfo.autoIncrement;
+                                    }
+                                }
+                                targetDB.createObjectStore(storeName, options);
+                            }
+                        };
+
+                        const openedDB = await new Promise(resolve => {
+                            dbRequest.onsuccess = () => resolve(dbRequest.result);
+                            dbRequest.onerror = () => resolve(null);
+                        });
+                        if (!openedDB) continue;
+
+                        // Insert records
+                        for (let storeName in data.indexedData[dbName]) {
+                            const storeInfo = data.indexedData[dbName][storeName];
+                            let records = [];
+                            
+                            // Backwards compatibility for old format backups
+                            if (storeInfo && Array.isArray(storeInfo)) {
+                                records = storeInfo;
+                            } else if (storeInfo && Array.isArray(storeInfo.records)) {
+                                records = storeInfo.records;
+                            }
+
+                            if (records.length === 0) continue;
+
+                            const storeTx = openedDB.transaction(storeName, 'readwrite');
+                            const objectStore = storeTx.objectStore(storeName);
+
+                            for (let item of records) {
+                                let key = null;
+                                let value = item;
+
+                                if (item && item.hasOwnProperty('key') && item.hasOwnProperty('value')) {
+                                    key = item.key;
+                                    value = item.value;
+                                }
+
+                                try {
+                                    if (objectStore.keyPath !== null && objectStore.keyPath !== undefined) {
+                                        // In-line key: key is part of value, must not provide key argument
+                                        objectStore.put(value);
+                                    } else {
+                                        // Out-of-line key: must provide key argument if not null
+                                        if (key !== null && key !== undefined) {
+                                            objectStore.put(value, key);
+                                        } else {
+                                            objectStore.put(value);
+                                        }
+                                    }
+                                } catch (err) {
+                                    console.error(`Error restoring record in store ${storeName}:`, err);
+                                }
+                            }
+
+                            await new Promise(resolve => {
+                                storeTx.oncomplete = resolve;
+                                storeTx.onerror = resolve;
+                            });
+                        }
+                        openedDB.close();
+                    }
+                }
+
+                alert("Successfully loaded. Press OK to apply.");
+                location.reload();
+            } catch (err) {
+                console.error("Restoration failed:", err);
+                alert("Restoration failed: " + err.message);
             }
-            alert("Restore Complete! Reloading site...");
-            location.reload();
         };
-        reader.readAsText(e.target.files[0]);
+        reader.readAsText(file);
     };
 }
 
