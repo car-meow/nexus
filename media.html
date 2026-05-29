@@ -510,6 +510,12 @@
             const win = window.open('about:blank', '_blank');
             if (!win) return alert('Pop-up blocked!');
 
+            // Set dark background immediately to prevent white flash
+            try {
+                win.document.documentElement.style.background = '#0a0a0a';
+                if (win.document.body) win.document.body.style.background = '#0a0a0a';
+            } catch (e) {}
+
             const safeTitle = String(title).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
             const epJson = JSON.stringify(seasonsData).replace(/</g, '\\u003c');
             const savedProgressJson = JSON.stringify(savedProgress).replace(/</g, '\\u003c');
@@ -544,7 +550,7 @@
   .episode-num { color: #9e9e9e; font-size: 11px; margin-bottom: 4px; font-weight: 600; }
 
   #player-container { position: absolute; inset: 0; background: #000; }
-  #main-player { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+  #main-player { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; background-color: #0a0a0a; background: #0a0a0a; }
   
   /* The popup overlay buttons */
   #hover-catcher {
@@ -589,7 +595,7 @@
 
 <div id="main-row">
   <div id="player-container">
-    <iframe id="main-player" allowfullscreen allow="autoplay; encrypted-media; fullscreen; picture-in-picture"></iframe>
+    <iframe id="main-player" style="background-color: #0a0a0a; background: #0a0a0a;" allowtransparency="true" allowfullscreen allow="autoplay; encrypted-media; fullscreen; picture-in-picture"></iframe>
   </div>
   <aside id="sidebar">
     <div class="sb-head">
@@ -703,8 +709,8 @@
 
   const PROVIDERS = [
     { id: 'cinemaos', name: 'CinemaOS', quality: 98, captions: 92, reliability: 98, popupRisk: 10,
-      movie: function(sid) { return 'https://cinemaos.tech/player/' + sid + '?title=false'; },
-      tv: function(sid, s, e) { return 'https://cinemaos.tech/player/' + sid + '/' + s + '/' + e; } },
+      movie: function(sid) { return 'https://cinemaos.live/player/' + sid + '?title=false'; },
+      tv: function(sid, s, e) { return 'https://cinemaos.live/player/' + sid + '/' + s + '/' + e; } },
     { id: 'vidlink', name: 'VidLink', quality: 96, captions: 92, reliability: 92, popupRisk: 16,
       movie: function(sid) { return 'https://vidlink.pro/movie/' + sid + '?primaryColor=a244b2&autoplay=1'; },
       tv: function(sid, s, e) { return 'https://vidlink.pro/tv/' + sid + '/' + s + '/' + e + '?primaryColor=a244b2&autoplay=1'; } },
@@ -736,7 +742,6 @@
   function supportsProvider(provider) {
     return provider && typeof provider[type] === 'function';
   }
-
   function providerScore(provider) {
     return (provider.quality * 5) + (provider.captions * 4) + (provider.reliability * 2) - (provider.popupRisk * 1.25);
   }
