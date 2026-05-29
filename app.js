@@ -657,6 +657,66 @@ if (exportBtn) {
 const proxyBtn = document.getElementById('proxy-btn');
 if (proxyBtn) {
     proxyBtn.onclick = () => {
+        const DEFAULT_PROXY_SOURCE = 'toothbrush-55gms';
+        const savedProxySource = localStorage.getItem('tb_proxy_source') || DEFAULT_PROXY_SOURCE;
+        const knownProxySources = new Set([DEFAULT_PROXY_SOURCE, 'gust.html', 'helios.html']);
+        const proxySource = knownProxySources.has(savedProxySource) ? savedProxySource : DEFAULT_PROXY_SOURCE;
+        const isToothbrushProxy = proxySource === DEFAULT_PROXY_SOURCE;
+        const toProxiedUrl = (rawValue) => {
+            const value = (rawValue || '').trim();
+            if (!value) return 'https://55gms.app/new.html';
+            const hasProtocol = /^https?:\/\//i.test(value);
+            const looksLikeUrl = hasProtocol || (value.includes('.') && !value.includes(' '));
+            const target = hasProtocol
+                ? value
+                : looksLikeUrl
+                    ? `https://${value}`
+                    : `https://duckduckgo.com/?q=${encodeURIComponent(value)}`;
+            return `https://55gms.app/embed.html#${target}`;
+        };
+        const toothbrushProxyHome = `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Toothbrush Proxy</title>
+<style>
+html,body{height:100%;margin:0;background:#151515;color:#fff;font-family:Arial,sans-serif}
+body{display:flex;align-items:center;justify-content:center}
+.home{width:min(720px,calc(100% - 32px));text-align:center}
+h1{font-size:44px;margin:0 0 26px;font-weight:800}
+form{display:flex;gap:10px}
+input{flex:1;padding:15px 16px;border:1px solid #3d3d3d;border-radius:8px;background:#242424;color:#fff;font-size:16px;outline:none}
+input:focus{border-color:#5fc772}
+button{padding:0 18px;border:0;border-radius:8px;background:#5fc772;color:#101010;font-weight:800;cursor:pointer}
+@media(max-width:600px){h1{font-size:34px}form{flex-direction:column}button{padding:14px}}
+</style>
+</head>
+<body>
+<main class="home">
+<h1>Toothbrush Proxy</h1>
+<form id="proxy-home-form">
+<input id="proxy-home-input" autocomplete="off" autofocus placeholder="Search or enter a URL">
+<button type="submit">Go</button>
+</form>
+</main>
+<script>
+function toProxyUrl(rawValue) {
+  var value = (rawValue || '').trim();
+  if (!value) return '';
+  var hasProtocol = /^https?:\\/\\//i.test(value);
+  var looksLikeUrl = hasProtocol || (value.indexOf('.') !== -1 && value.indexOf(' ') === -1);
+  var target = hasProtocol ? value : (looksLikeUrl ? 'https://' + value : 'https://duckduckgo.com/?q=' + encodeURIComponent(value));
+  return 'https://55gms.app/embed.html#' + target;
+}
+document.getElementById('proxy-home-form').addEventListener('submit', function(event) {
+  event.preventDefault();
+  var nextUrl = toProxyUrl(document.getElementById('proxy-home-input').value);
+  if (nextUrl) window.location.href = nextUrl;
+});
+</script>
+</body>
+</html>`;
         const win = window.open('about:blank', '_blank');
         if (!win) return alert("Pop-up Blocked! Please allow pop-ups.");
 
@@ -688,15 +748,32 @@ if (proxyBtn) {
         title.textContent = 'Toothbrush Proxy';
         title.style.fontWeight = 'bold';
         title.style.marginRight = '15px';
-        
-        const subtext = win.document.createElement('span');
-        subtext.textContent = 'Press F2 to hide (Launcher+Refresh on Chromebook)';
-        subtext.style.fontSize = '12px';
-        subtext.style.color = '#aaa';
+
+        const address = win.document.createElement('input');
+        address.type = 'text';
+        address.placeholder = 'Search or enter a URL';
+        Object.assign(address.style, {
+            flex: '1',
+            maxWidth: '520px',
+            padding: '6px 10px',
+            borderRadius: '6px',
+            border: '1px solid #555',
+            backgroundColor: '#2c2c2c',
+            color: '#fff',
+            outline: 'none',
+            display: isToothbrushProxy ? 'block' : 'none'
+        });
+        address.addEventListener('keydown', (e) => {
+            if (e.key !== 'Enter') return;
+            e.preventDefault();
+            const nextUrl = toProxiedUrl(address.value);
+            if (nextUrl) iframe.src = nextUrl;
+            address.blur();
+        });
 
         header.appendChild(backBtn);
         header.appendChild(title);
-        header.appendChild(subtext);
+        header.appendChild(address);
         win.document.body.appendChild(header);
 
         // Inject the proxy iframe
@@ -705,7 +782,11 @@ if (proxyBtn) {
             position: 'fixed', top: '40px', left: '0', width: '100%', height: 'calc(100% - 40px)',
             border: 'none', margin: '0', padding: '0', overflow: 'hidden'
         });
-        iframe.src = "https://trigonometry.scientificsense.org/"; // You can change this proxy link if it gets blocked
+        if (isToothbrushProxy) {
+            iframe.srcdoc = toothbrushProxyHome;
+        } else {
+            iframe.src = proxySource;
+        }
         win.document.body.appendChild(iframe);
         
         win.document.addEventListener('keydown', (e) => {

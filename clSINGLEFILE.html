@@ -472,23 +472,18 @@
 
         function applyStashSearch() {
             searchLayoutIsUpdating = true;
-            sectionsContainer.style.display = 'none'; // Prevent reflows
-            
             rememberSectionOrder();
-            restoreSectionOrder();
             resetSearchStyles();
 
             const query = searchInput.value.trim().toLowerCase();
             if (!query) {
                 document.body.classList.remove('stash-searching');
                 noResultsMessage.style.display = 'none';
-                sectionsContainer.style.display = '';
                 searchLayoutIsUpdating = false;
                 return;
             }
 
             let matchCount = 0;
-            const matchingSections = [];
             const sections = getLetterSections();
 
             sections.forEach(section => {
@@ -509,18 +504,11 @@
                 }
 
                 section.style.display = sectionHasMatch ? '' : 'none';
-                if (sectionHasMatch) matchingSections.push(section);
             });
 
             document.body.classList.add('stash-searching');
-            const frag = document.createDocumentFragment();
-            matchingSections.forEach(section => frag.appendChild(section));
-            sectionsContainer.insertBefore(frag, sectionsContainer.firstChild);
-
             noResultsMessage.style.display = matchCount ? 'none' : 'block';
             searchResultsContainer.appendChild(noResultsMessage);
-            
-            sectionsContainer.style.display = '';
             window.scrollTo({ top: 0, behavior: 'auto' });
             searchLayoutIsUpdating = false;
         }

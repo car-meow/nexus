@@ -101,6 +101,7 @@
         <div class="setting-row">
             <span class="setting-label">Proxy Source</span>
             <select id="select-proxy-source" class="custom-select">
+                <option value="toothbrush-55gms">Toothbrush Proxy</option>
                 <option value="gust.html">Gust</option>
                 <option value="helios.html">Helios</option>
             </select>
@@ -161,8 +162,11 @@
 
         // Proxy Source
         const selectProxy = document.getElementById('select-proxy-source');
-        const savedProxy = localStorage.getItem('tb_proxy_source') || 'gust.html';
-        selectProxy.value = savedProxy;
+        const DEFAULT_PROXY_SOURCE = 'toothbrush-55gms';
+        const savedProxy = localStorage.getItem('tb_proxy_source') || DEFAULT_PROXY_SOURCE;
+        selectProxy.value = Array.from(selectProxy.options).some(option => option.value === savedProxy)
+            ? savedProxy
+            : DEFAULT_PROXY_SOURCE;
         selectProxy.addEventListener('change', (e) => {
             localStorage.setItem('tb_proxy_source', e.target.value);
         });
