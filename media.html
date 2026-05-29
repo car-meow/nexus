@@ -529,14 +529,12 @@
   #main-row { width: 100vw; height: 100vh; position: relative; overflow: hidden; }
   
   /* Sidebar styles */
-  #sidebar { position: fixed; top: 78px; right: 18px; bottom: 22px; width: min(340px, calc(100vw - 36px)); min-width: 0; background: rgba(20, 20, 20, 0.92); border: 1px solid rgba(255,255,255,0.14); border-radius: 14px; display: flex; flex-direction: column; transition: transform 0.24s ease, opacity 0.2s ease; z-index: 240; box-shadow: 0 18px 60px rgba(0,0,0,0.58); backdrop-filter: blur(14px); overflow: hidden; }
-  body.sidebar-collapsed #sidebar { transform: translateY(-10px) scale(0.96); opacity: 0; pointer-events: none; }
+  #sidebar { position: fixed; top: 78px; left: 18px; bottom: 22px; width: min(340px, calc(100vw - 36px)); min-width: 0; background: rgba(20, 20, 20, 0.92); border: 1px solid rgba(255,255,255,0.14); border-radius: 14px; display: flex; flex-direction: column; transition: transform 0.24s ease, opacity 0.2s ease; z-index: 240; box-shadow: 0 18px 60px rgba(0,0,0,0.58); backdrop-filter: blur(14px); overflow: hidden; }
+  body.sidebar-collapsed #sidebar { transform: translateY(-10px) scale(0.96); transform-origin: top left; opacity: 0; pointer-events: none; }
   body.movie-mode #sidebar { display: none; }
   body.movie-mode #peek-open { display: none; }
   
-  .sb-head { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; border-bottom: 1px solid #333; position: sticky; top: 0; background: rgba(20,20,20,0.96); z-index: 5; font-weight: 700; }
-  #btn-collapse-sb { border: none; background: #2a2a2a; color: #fff; width: 36px; height: 36px; border-radius: 8px; cursor: pointer; font-size: 18px; font-family: 'Space Grotesk', sans-serif; }
-  #btn-collapse-sb:hover { background: #5a5a5f; }
+  .sb-head { display: flex; align-items: center; justify-content: flex-start; padding: 14px 16px; border-bottom: 1px solid #333; position: sticky; top: 0; background: rgba(20,20,20,0.96); z-index: 5; font-weight: 700; }
   
   #episode-wrap { flex: 1; overflow-y: auto; }
   body.movie-mode #episode-wrap { display: none !important; }
@@ -552,7 +550,7 @@
   #hover-catcher { display: none; }
 
   #peek-zone { 
-      position: fixed; left: 50%; top: 16px; z-index: 260; transform: translateX(-50%);
+      position: fixed; left: 16px; top: 16px; z-index: 260;
       display: flex; align-items: center; justify-content: center; 
       padding: 0; pointer-events: none;
       transition: opacity 0.5s ease; opacity: 1;
@@ -570,7 +568,7 @@
   }
   .peek-ico-btn:hover { opacity: 1; transform: translateY(-1px); background: #73737a; }
   .peek-ico-btn img { width: 30px; height: 30px; display: block; pointer-events: none; }
-  @media (max-width: 640px) { #sidebar { top: 72px; right: 10px; bottom: 12px; width: calc(100vw - 20px); } }
+  @media (max-width: 640px) { #sidebar { top: 72px; left: 10px; bottom: 12px; width: calc(100vw - 20px); } #peek-zone { left: 10px; top: 10px; } }
 </style>
 </head>
 <body class="${type === 'tv' ? 'tv-mode sidebar-collapsed' : 'movie-mode sidebar-collapsed'}">
@@ -592,7 +590,6 @@
   <aside id="sidebar">
     <div class="sb-head">
       <span id="sb-title">${type === 'tv' ? 'Episodes' : 'Player'}</span>
-      <button type="button" id="btn-collapse-sb" title="Hide sidebar">▶</button>
     </div>
     
     <div id="episode-wrap"><div id="episode-list"></div></div>
@@ -806,12 +803,19 @@
   resetFade();
 
   // Sidebar controls logic
-  function setCollapsed(on) { document.body.classList.toggle('sidebar-collapsed', on); }
-  const btnCollapse = document.getElementById('btn-collapse-sb');
-  if (btnCollapse) btnCollapse.addEventListener('click', () => setCollapsed(true));
+  function setCollapsed(on) {
+    document.body.classList.toggle('sidebar-collapsed', on);
+    if (peekOpenBtn) {
+      peekOpenBtn.title = on ? 'Show Sidebar' : 'Hide Sidebar';
+      peekOpenBtn.setAttribute('aria-pressed', on ? 'false' : 'true');
+    }
+  }
   
   const peekOpenBtn = document.getElementById('peek-open');
-  if (peekOpenBtn) peekOpenBtn.addEventListener('click', () => setCollapsed(false));
+  if (peekOpenBtn) {
+    peekOpenBtn.addEventListener('click', () => setCollapsed(!document.body.classList.contains('sidebar-collapsed')));
+    setCollapsed(document.body.classList.contains('sidebar-collapsed'));
+  }
 
   // Back Button Logic: Disable the redirect trap before closing
   const btnBack = document.getElementById('btn-back');
