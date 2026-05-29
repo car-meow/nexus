@@ -547,7 +547,11 @@
   #main-player { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
   
   /* The popup overlay buttons */
-  #hover-catcher { display: none; }
+  #hover-catcher {
+      position: fixed; left: 0; top: 0; width: 150px; height: 86px;
+      z-index: 255; display: block; pointer-events: auto; background: transparent;
+  }
+  body.movie-mode #hover-catcher { width: 94px; }
 
   #peek-zone { 
       position: fixed; left: 16px; top: 16px; z-index: 260;
@@ -568,7 +572,7 @@
   }
   .peek-ico-btn:hover { opacity: 1; transform: translateY(-1px); background: #73737a; }
   .peek-ico-btn img { width: 30px; height: 30px; display: block; pointer-events: none; }
-  @media (max-width: 640px) { #sidebar { top: 72px; left: 10px; bottom: 12px; width: calc(100vw - 20px); } #peek-zone { left: 10px; top: 10px; } }
+  @media (max-width: 640px) { #sidebar { top: 72px; left: 10px; bottom: 12px; width: calc(100vw - 20px); } #peek-zone { left: 10px; top: 10px; } #hover-catcher { width: 142px; height: 78px; } body.movie-mode #hover-catcher { width: 86px; } }
 </style>
 </head>
 <body class="${type === 'tv' ? 'tv-mode sidebar-collapsed' : 'movie-mode sidebar-collapsed'}">
@@ -798,7 +802,10 @@
   }
 
   document.addEventListener('mousemove', resetFade);
-  if (hoverCatcher) hoverCatcher.addEventListener('mousemove', resetFade);
+  if (hoverCatcher) {
+    hoverCatcher.addEventListener('mouseenter', resetFade);
+    hoverCatcher.addEventListener('mousemove', resetFade);
+  }
   if (peekZone) peekZone.addEventListener('mousemove', resetFade);
   resetFade();
 
