@@ -114,14 +114,14 @@ function renderGameList() {
 
         if (isUserManagedGame(game)) {
             const rename = document.createElement('span');
-            rename.innerHTML = "&#128221;";
+            rename.innerHTML = '<img src="Assets/Rename.svg" alt="Rename" style="width:18px;height:18px;filter:brightness(0) invert(1);vertical-align:middle;">';
             rename.className = "app-action-btn rename-btn";
             rename.title = "Rename app";
             rename.onclick = (e) => { e.stopPropagation(); openRenamePrompt(game); };
             li.appendChild(rename);
 
             const del = document.createElement('span');
-            del.innerHTML = "🗑️"; del.className = "app-action-btn trash-btn";
+            del.innerHTML = '<img src="Assets/Delete.svg" alt="Delete" style="width:18px;height:18px;filter:brightness(0) invert(1);vertical-align:middle;">'; del.className = "app-action-btn trash-btn";
             del.onclick = (e) => { e.stopPropagation(); deleteGame(game.id, i); };
             del.style.marginRight = "22px"; // keep close to the drag handle
             li.appendChild(del);
@@ -658,154 +658,7 @@ if (exportBtn) {
 const proxyBtn = document.getElementById('proxy-btn');
 if (proxyBtn) {
     proxyBtn.onclick = () => {
-        const DEFAULT_PROXY_SOURCE = 'nexus-proxy';
-        const savedProxySource = localStorage.getItem('tb_proxy_source') || DEFAULT_PROXY_SOURCE;
-        const knownProxySources = new Set([DEFAULT_PROXY_SOURCE, 'toothbrush-55gms', 'gust.html', 'helios.html']);
-        const proxySource = knownProxySources.has(savedProxySource) ? savedProxySource : DEFAULT_PROXY_SOURCE;
-        const isNexusProxy = proxySource === DEFAULT_PROXY_SOURCE || proxySource === 'toothbrush-55gms';
-        const toProxiedUrl = (rawValue) => {
-            const value = (rawValue || '').trim();
-            if (!value) return 'https://55gms.app/new.html';
-            const hasProtocol = /^https?:\/\//i.test(value);
-            const looksLikeUrl = hasProtocol || (value.includes('.') && !value.includes(' '));
-            const target = hasProtocol
-                ? value
-                : looksLikeUrl
-                    ? `https://${value}`
-                    : `https://duckduckgo.com/?q=${encodeURIComponent(value)}`;
-            return `https://55gms.app/embed.html#${target}`;
-        };
-        const nexusProxyHome = `<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Nexus Proxy</title>
-<style>
-html,body{height:100%;margin:0;background:#151515;color:#fff;font-family:Arial,sans-serif}
-body{display:flex;align-items:center;justify-content:center}
-.home{width:min(720px,calc(100% - 32px));text-align:center}
-h1{font-size:44px;margin:0 0 26px;font-weight:800}
-form{display:flex;gap:10px}
-input{flex:1;padding:15px 16px;border:1px solid #3d3d3d;border-radius:8px;background:#242424;color:#fff;font-size:16px;outline:none}
-input:focus{border-color:#5fc772}
-button{padding:0 18px;border:0;border-radius:8px;background:#5fc772;color:#101010;font-weight:800;cursor:pointer}
-@media(max-width:600px){h1{font-size:34px}form{flex-direction:column}button{padding:14px}}
-</style>
-</head>
-<body>
-<main class="home">
-<h1>Nexus Proxy</h1>
-<form id="proxy-home-form">
-<input id="proxy-home-input" autocomplete="off" autofocus placeholder="Search or enter a URL">
-<button type="submit">Go</button>
-</form>
-</main>
-<script>
-function toProxyUrl(rawValue) {
-  var value = (rawValue || '').trim();
-  if (!value) return '';
-  var hasProtocol = /^https?:\\/\\//i.test(value);
-  var looksLikeUrl = hasProtocol || (value.indexOf('.') !== -1 && value.indexOf(' ') === -1);
-  var target = hasProtocol ? value : (looksLikeUrl ? 'https://' + value : 'https://duckduckgo.com/?q=' + encodeURIComponent(value));
-  return 'https://55gms.app/embed.html#' + target;
-}
-document.getElementById('proxy-home-form').addEventListener('submit', function(event) {
-  event.preventDefault();
-  var nextUrl = toProxyUrl(document.getElementById('proxy-home-input').value);
-  if (nextUrl) window.location.href = nextUrl;
-});
-</script>
-</body>
-</html>`;
-        const win = window.open('about:blank', '_blank');
-        if (!win) return alert("Pop-up Blocked! Please allow pop-ups.");
-
-        // Set the cloaked tab title and icon
-        win.document.title = 'New Tab';
-        const icon = win.document.createElement('link');
-        icon.rel = 'icon';
-        icon.href = 'https://ssl.gstatic.com/images/branding/product/1x/drive_2020q4_32dp.png';
-        win.document.head.appendChild(icon);
-
-        // Inject the proxy header
-        const header = win.document.createElement('div');
-        Object.assign(header.style, {
-            position: 'fixed', top: '0', left: '0', width: '100%', height: '40px',
-            backgroundColor: '#1f1f1f', color: '#fff', display: 'flex', alignItems: 'center',
-            padding: '0 15px', boxSizing: 'border-box', zIndex: '999999',
-            fontFamily: 'sans-serif', borderBottom: '1px solid #333'
-        });
-        
-        const backBtn = win.document.createElement('button');
-        backBtn.textContent = 'Back';
-        Object.assign(backBtn.style, {
-            backgroundColor: '#3d3d3d', color: 'white', border: '1px solid #555',
-            padding: '5px 15px', borderRadius: '4px', cursor: 'pointer', marginRight: '15px'
-        });
-        backBtn.onclick = () => win.close();
-        
-        const title = win.document.createElement('span');
-        title.textContent = 'Nexus Proxy';
-        title.style.fontWeight = 'bold';
-        title.style.marginRight = '15px';
-
-        const address = win.document.createElement('input');
-        address.type = 'text';
-        address.placeholder = 'Search or enter a URL';
-        Object.assign(address.style, {
-            flex: '1',
-            maxWidth: '520px',
-            padding: '6px 10px',
-            borderRadius: '6px',
-            border: '1px solid #555',
-            backgroundColor: '#2c2c2c',
-            color: '#fff',
-            outline: 'none',
-            display: isNexusProxy ? 'block' : 'none'
-        });
-        address.addEventListener('keydown', (e) => {
-            if (e.key !== 'Enter') return;
-            e.preventDefault();
-            const nextUrl = toProxiedUrl(address.value);
-            if (nextUrl) iframe.src = nextUrl;
-            address.blur();
-        });
-
-        header.appendChild(backBtn);
-        header.appendChild(title);
-        header.appendChild(address);
-        win.document.body.appendChild(header);
-
-        // Inject the proxy iframe
-        const iframe = win.document.createElement('iframe');
-        Object.assign(iframe.style, {
-            position: 'fixed', top: '40px', left: '0', width: '100%', height: 'calc(100% - 40px)',
-            border: 'none', margin: '0', padding: '0', overflow: 'hidden'
-        });
-        if (isNexusProxy) {
-            iframe.srcdoc = nexusProxyHome;
-        } else {
-            iframe.src = proxySource;
-        }
-        win.document.body.appendChild(iframe);
-        
-        win.document.addEventListener('keydown', (e) => {
-            if (e.key === 'F2') {
-                if (header.style.display !== 'none') {
-                    header.style.display = 'none';
-                    iframe.style.top = '0';
-                    iframe.style.height = '100%';
-                } else {
-                    header.style.display = 'flex';
-                    iframe.style.top = '40px';
-                    iframe.style.height = 'calc(100% - 40px)';
-                }
-            }
-        });
-        
-        // Leave the original tab open for quick return.
-        killMainTab();
+        window.location.href = 'gust.html';
     };
 }
 

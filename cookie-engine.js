@@ -425,7 +425,7 @@ function renderShop() {
     DOM.shopList.innerHTML = '';
 
     // Autobakers
-    addShopCategory('🤖 Autobakers');
+    addShopCategory('<img src="Assets/Robot.svg" alt="">Autobakers');
     SHOP_ITEMS.filter(i => i.cat === 'autobaker').forEach(item => {
         const count = G.autobakers[item.id] || 0;
         const cost = getItemCost(item, count);
@@ -440,7 +440,7 @@ function renderShop() {
     });
 
     // Swag Upgrades (Permanent)
-    addShopCategory('🔥 Swag Upgrades (Permanent)');
+    addShopCategory('<img src="Assets/Fire.svg" alt="">Swag Upgrades (Permanent)');
     SHOP_ITEMS.filter(i => i.cat === 'upgrade').forEach(item => {
         if (item.req && (G.upgrades[item.req.id] || 0) < item.req.count) return;
 
@@ -460,14 +460,14 @@ function renderShop() {
     });
 
     // Consumables
-    addShopCategory('⚡ Consumables');
+    addShopCategory('<img src="Assets/Bolt.svg" alt="">Consumables');
     SHOP_ITEMS.filter(i => i.cat === 'consumable').forEach(item => {
         const state = G.consumables[item.id] || { active: false, endTime: 0, cooldownEnd: 0 };
         const now = Date.now();
         const onCooldown = now < state.cooldownEnd;
         const isActive = state.active && now < state.endTime;
         const canBuy = G.bucks >= item.baseCost && !onCooldown && !isActive;
-        const statusText = isActive ? '⏳ Active' : onCooldown ? '🕐 Cooldown' : 'Ready';
+        const statusText = isActive ? '<img src="Assets/Active Timer.svg" alt="">Active' : onCooldown ? '<img src="Assets/Cooldown.svg" alt="">Cooldown' : 'Ready';
         const div = makeShopCard(item.name, item.desc, '₡' + formatNum(item.baseCost), statusText, canBuy, () => {
             if (!canBuy) return;
             G.bucks -= item.baseCost;
@@ -523,7 +523,7 @@ function renderShop() {
 function addShopCategory(label) {
     const cat = document.createElement('div');
     cat.className = 'shop-cat';
-    cat.textContent = label;
+    cat.innerHTML = label;
     DOM.shopList.appendChild(cat);
 }
 
@@ -573,7 +573,7 @@ function renderStats() {
 function doIncinerate() {
     const gain = calcPrestigeGain();
     if (gain < 1) { alert('You need ₡1,000,000 total earnings to Incinerate! Keep clicking.'); return; }
-    if (!confirm('🔥 INCINERATE?\n\nYou will lose ALL ₡' + formatNum(G.bucks) + ' and all Autobakers.\nYou will gain ' + gain + ' Swag Points (₴).\n\nSwag upgrades are permanent.')) return;
+    if (!confirm('INCINERATE?\n\nYou will lose ALL ₡' + formatNum(G.bucks) + ' and all Autobakers.\nYou will gain ' + gain + ' Swag Points (₴).\n\nSwag upgrades are permanent.')) return;
     G.swag += gain;
     G.bucks = 0;
     G.totalEarned = 0;
@@ -664,62 +664,7 @@ window.addEventListener('DOMContentLoaded', () => {
     document.getElementById('btn-nav-chat').onclick = () => { location.href = 'chat.html'; };
     document.getElementById('btn-nav-media').onclick = () => { location.href = 'media.html'; };
     document.getElementById('btn-nav-settings').onclick = () => { location.href = 'settings.html'; };
-    document.getElementById('proxy-btn').onclick = () => {
-        const DEFAULT_PROXY_SOURCE = 'nexus-proxy';
-        const savedProxySource = localStorage.getItem('tb_proxy_source') || DEFAULT_PROXY_SOURCE;
-        const knownProxySources = new Set([DEFAULT_PROXY_SOURCE, 'toothbrush-55gms', 'gust.html', 'helios.html']);
-        const source = knownProxySources.has(savedProxySource) ? savedProxySource : DEFAULT_PROXY_SOURCE;
-        const win = window.open('about:blank', '_blank');
-        if (!win) return alert("Pop-up Blocked! Please allow pop-ups.");
-        if (source === DEFAULT_PROXY_SOURCE || source === 'toothbrush-55gms') {
-            win.document.open();
-            win.document.write(`<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Nexus Proxy</title>
-<style>
-html,body{height:100%;margin:0;background:#0c0c0c;color:#fff;font-family:Arial,sans-serif}
-body{display:flex;align-items:center;justify-content:center}
-main{width:min(720px,calc(100% - 32px));text-align:center}
-h1{font-size:44px;margin:0 0 26px;font-weight:800}
-form{display:flex;gap:10px}
-input{flex:1;padding:15px 16px;border:1px solid #fff;border-radius:999px;background:rgba(255,255,255,.08);color:#fff;font-size:16px;outline:none}
-button{padding:0 22px;border:1px solid #fff;border-radius:999px;background:rgba(255,255,255,.08);color:#fff;font-weight:800;cursor:pointer}
-@media(max-width:600px){h1{font-size:34px}form{flex-direction:column}button{padding:14px}}
-</style>
-</head>
-<body>
-<main>
-<h1>Nexus Proxy</h1>
-<form id="proxy-home-form">
-<input id="proxy-home-input" autocomplete="off" autofocus placeholder="Search or enter a URL">
-<button type="submit">Go</button>
-</form>
-</main>
-<script>
-function toProxyUrl(rawValue) {
-  var value = (rawValue || '').trim();
-  if (!value) return '';
-  var hasProtocol = /^https?:\\/\\//i.test(value);
-  var looksLikeUrl = hasProtocol || (value.indexOf('.') !== -1 && value.indexOf(' ') === -1);
-  var target = hasProtocol ? value : (looksLikeUrl ? 'https://' + value : 'https://duckduckgo.com/?q=' + encodeURIComponent(value));
-  return 'https://55gms.app/embed.html#' + target;
-}
-document.getElementById('proxy-home-form').addEventListener('submit', function(event) {
-  event.preventDefault();
-  var nextUrl = toProxyUrl(document.getElementById('proxy-home-input').value);
-  if (nextUrl) window.location.href = nextUrl;
-});
-<\/script>
-</body>
-</html>`);
-            win.document.close();
-        } else {
-            win.location.href = source;
-        }
-    };
+    document.getElementById('proxy-btn').onclick = () => { location.href = 'gust.html'; };
 
 
     DOM.hideMenuBtn.onclick = (e) => { e.preventDefault(); toggleMenus(); };

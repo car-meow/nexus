@@ -10,6 +10,9 @@
             if (theme === 'light') document.documentElement.classList.add('light-mode');
         })();
     </script>
+    <link rel="prefetch" href="index.html">
+    <link rel="prefetch" href="cookie-engine.js">
+    <link rel="prefetch" href="cookie-core.js">
 </head>
 <body>
     <header>
@@ -23,21 +26,22 @@
         </div>
 		
         <div class="controls">
-
-            <button id="cloak-btn" class="save-btn" style="background-color: #E91E63;">Fullscreen</button>
-            
-            <button onclick="location.href='pdf-stash.html'" class="save-btn" style="background-color: #F57C00;">Stash</button>
-            <button id="export-btn" class="save-btn" style="background-color: #4CAF50;">Backup</button>
-            <button onclick="document.getElementById('import-btn').click()" class="save-btn" style="background-color: #4CAF50;">Restore</button>
+            <button id="cloak-btn" class="save-btn material-nav-btn" style="--expanded-width: 160px;">
+                <img src="Assets/Bolt.svg" alt=""><span>Fullscreen</span>
+            </button>
+            <button id="export-btn" class="save-btn material-nav-btn" style="--expanded-width: 130px;">
+                <img src="Assets/Fire.svg" alt=""><span>Backup</span>
+            </button>
+            <button onclick="document.getElementById('import-btn').click()" class="save-btn material-nav-btn" style="--expanded-width: 130px;">
+                <img src="Assets/Active Timer.svg" alt=""><span>Restore</span>
+            </button>
             <input type="file" id="import-btn" accept=".json" style="display:none">
-            
-            <button id="custom-app-btn" class="save-btn" style="background-color: #2196F3;">Custom</button>
-
-            <!-- Spacer Div -->
-            <div style="width: 15px;"></div>
-            
-            <!-- Dark Back Button -->
-            <button onclick="location.href='index.html'" class="save-btn" style="background-color: #3d3d3d; border: 1px solid #444;">Back</button>
+            <button id="custom-app-btn" class="save-btn material-nav-btn" style="--expanded-width: 130px;">
+                <img src="Assets/Robot.svg" alt=""><span>Custom</span>
+            </button>
+            <button onclick="location.href='index.html'" class="save-btn material-nav-btn" style="--expanded-width: 110px;">
+                <img src="Assets/media-back-arrow.svg" alt=""><span>Back</span>
+            </button>
         </div>
     </header>
     <main>
@@ -57,16 +61,16 @@
     </main>
     <!-- Custom App Overlay -->
     <div id="custom-app-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.88); z-index: 30000; align-items: center; justify-content: center;">
-        <div style="background: var(--modal-bg); padding: 28px; border-radius: 16px; width: 440px; max-width: 90vw; border: 2px solid #2196F3; text-align: center; box-shadow: 0 0 40px rgba(0,0,0,0.9);">
+        <div style="background: var(--modal-bg); padding: 28px; border-radius: 24px; width: 440px; max-width: 90vw; border: 2px solid #2196F3; text-align: center; box-shadow: 0 0 40px rgba(0,0,0,0.9);">
             <h2 style="color: #2196F3; margin-top: 0; margin-bottom: 12px; font-size: 24px;">Add Local App</h2>
             <input type="text" id="new-game-title" placeholder="App Title" style="width: 100%; padding: 12px; margin-bottom: 18px; box-sizing: border-box; border-radius: 8px; border: 1px solid var(--border-color); background: var(--input-bg); color: var(--text-color); font-size: 16px;">
             <input type="file" id="new-game-file" accept=".html" style="width: 100%; margin-bottom: 18px; color: var(--text-color); background: var(--input-bg); padding: 10px; border-radius: 8px; border: 1px solid var(--border-color);">
-            <button id="add-game-btn" style="background: #4CAF50; color: white; border: none; padding: 12px; border-radius: 8px; width: 100%; font-size: 16px; font-weight: bold; cursor: pointer; transition: filter 0.2s;">Add App</button>
+            <button id="add-game-btn" style="background: #4CAF50; color: white; border: none; padding: 12px; border-radius: 999px; width: 100%; font-size: 16px; font-weight: bold; cursor: pointer; transition: filter 0.2s;">Add App</button>
         </div>
     </div>
 
     <div id="rename-overlay" class="overlay">
-        <div style="background: var(--modal-bg); padding: 28px; border-radius: 16px; width: 440px; max-width: 90vw; border: 2px solid #2196F3; text-align: center; box-shadow: 0 0 40px rgba(0,0,0,0.9);">
+        <div style="background: var(--modal-bg); padding: 28px; border-radius: 24px; width: 440px; max-width: 90vw; border: 2px solid #2196F3; text-align: center; box-shadow: 0 0 40px rgba(0,0,0,0.9);">
             <h2 style="color: #2196F3; margin-top: 0; margin-bottom: 12px; font-size: 24px;">Rename App</h2>
             <input type="text" id="rename-app-title" class="rename-input" placeholder="App Title">
             <button id="rename-done-btn" class="rename-done-btn">Done</button>

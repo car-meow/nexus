@@ -48,6 +48,9 @@
         }
         #pin-wrapper.revealed #pin-cover { opacity: 0; }
     </style>
+    <link rel="prefetch" href="index.html">
+    <link rel="prefetch" href="cookie-engine.js">
+    <link rel="prefetch" href="cookie-core.js">
 </head>
 <body class="chat-bg">
     <header>
@@ -72,9 +75,15 @@
         </div>
 
         <div class="controls">
-			<button id="reroll-btn" class="save-btn" style="background:#5E35B1; display:none;">Re-Roll Username</button>
-            <button id="disband-btn" class="save-btn" style="background:#B71C1C; display:none;">Disband</button>
-            <button id="chat-back-btn" onclick="location.href='index.html'" class="save-btn" style="background:#555;">Back</button>
+            <button id="reroll-btn" class="save-btn material-nav-btn" style="--expanded-width: 190px; display:none;">
+                <img src="Assets/Rename.svg" alt=""><span>Re-Roll Username</span>
+            </button>
+            <button id="disband-btn" class="save-btn material-nav-btn" style="--expanded-width: 130px; display:none;">
+                <img src="Assets/Delete.svg" alt=""><span>Disband</span>
+            </button>
+            <button id="chat-back-btn" onclick="location.href='index.html'" class="save-btn material-nav-btn" style="--expanded-width: 110px;">
+                <img src="Assets/media-back-arrow.svg" alt=""><span>Back</span>
+            </button>
         </div>
     </header>
 
@@ -225,7 +234,7 @@
                     if(isAdmin) innerHTML += `<span class="ip-text">${user.ip}</span>`;
                     
                     if(isHost && user.name !== myName) {
-                        innerHTML += `<span onclick="kickById('${user.peerId}', '${user.name}')" style="cursor:pointer; font-size:18px;">🗑️</span>`;
+                        innerHTML += `<span onclick="kickById('${user.peerId}', '${user.name}')" style="cursor:pointer;"><img src="Assets/Delete.svg" alt="Kick" style="width:18px;height:18px;filter:brightness(0) invert(1);vertical-align:middle;"></span>`;
                     }
                     
                     row.innerHTML = innerHTML;
@@ -412,8 +421,7 @@
                     if(backBtn) backBtn.style.display = 'none';
                 } else {
                     if(backBtn) {
-                        backBtn.textContent = 'Leave';
-                        backBtn.style.background = '#B71C1C';
+                        if(backBtn.querySelector('span')) backBtn.querySelector('span').textContent = 'Leave';
                     }
                 }
             }
@@ -533,11 +541,11 @@
 
                 rerollCooldown = true;
                 const btn = document.getElementById('reroll-btn');
-                btn.style.opacity = '0.5'; btn.style.cursor = 'not-allowed'; btn.textContent = "Cooldown (3m)";
+                btn.style.opacity = '0.5'; btn.style.cursor = 'not-allowed'; btn.querySelector('span').textContent = "Cooldown (3m)";
                 
                 setTimeout(() => {
                     rerollCooldown = false;
-                    btn.style.opacity = '1'; btn.style.cursor = 'pointer'; btn.textContent = "Re-Roll Username";
+                    btn.style.opacity = '1'; btn.style.cursor = 'pointer'; btn.querySelector('span').textContent = "Re-Roll Username";
                 }, 180000); 
             };
 
