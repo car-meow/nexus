@@ -658,7 +658,24 @@ if (exportBtn) {
 const proxyBtn = document.getElementById('proxy-btn');
 if (proxyBtn) {
     proxyBtn.onclick = () => {
-        window.location.href = 'gust.html';
+        const win = window.open('about:blank', '_blank');
+        if (win) {
+            win.document.title = "GUST Browser";
+            win.document.body.style.margin = '0';
+            win.document.body.style.padding = '0';
+            win.document.body.style.overflow = 'hidden';
+            const iframe = win.document.createElement('iframe');
+            iframe.style.position = 'fixed';
+            iframe.style.top = '0';
+            iframe.style.left = '0';
+            iframe.style.width = '100%';
+            iframe.style.height = '100%';
+            iframe.style.border = 'none';
+            iframe.src = window.location.href.substring(0, window.location.href.lastIndexOf('/') + 1) + 'gust.html';
+            win.document.body.appendChild(iframe);
+        } else {
+            alert('Pop-up blocked! Please allow pop-ups to open the proxy.');
+        }
     };
 }
 

@@ -75,14 +75,14 @@
         </div>
 
         <div class="controls">
-            <button id="reroll-btn" class="save-btn material-nav-btn" style="--expanded-width: 190px; display:none;">
+            <button id="reroll-btn" class="material-nav-btn" style="--expanded-width: 190px; display:none;">
                 <img src="Assets/Rename.svg" alt=""><span>Re-Roll Username</span>
             </button>
-            <button id="disband-btn" class="save-btn material-nav-btn" style="--expanded-width: 130px; display:none;">
+            <button id="disband-btn" class="material-nav-btn" style="--expanded-width: 120px; display:none;">
                 <img src="Assets/Delete.svg" alt=""><span>Disband</span>
             </button>
-            <button id="chat-back-btn" onclick="location.href='index.html'" class="save-btn material-nav-btn" style="--expanded-width: 110px;">
-                <img src="Assets/media-back-arrow.svg" alt=""><span>Back</span>
+            <button id="chat-back-btn" onclick="location.href='index.html'" class="material-nav-btn" style="--expanded-width: 104px;">
+                <img src="Assets/media-back-arrow.svg" alt=""><span>Home</span>
             </button>
         </div>
     </header>
@@ -410,14 +410,14 @@
                 document.getElementById('chat-room').style.display = 'flex';
                 document.getElementById('room-header-info').style.display = 'block';
                 document.getElementById('stats-area').style.display = 'flex';
-                document.getElementById('reroll-btn').style.display = 'block';
+                document.getElementById('reroll-btn').style.display = 'inline-flex';
                 document.getElementById('display-room-name').textContent = name;
                 document.getElementById('display-pin').textContent = pin;
                 document.getElementById('pin-wrapper').classList.remove('revealed'); 
                 
                 const backBtn = document.getElementById('chat-back-btn');
                 if(isHost) {
-                    document.getElementById('disband-btn').style.display = 'block';
+                    document.getElementById('disband-btn').style.display = 'inline-flex';
                     if(backBtn) backBtn.style.display = 'none';
                 } else {
                     if(backBtn) {

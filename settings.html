@@ -7,7 +7,7 @@
     <style>
         body {
             margin: 0; overflow: hidden; width: 100vw; height: 100vh;
-            display: flex; align-items: center; justify-content: center;
+            display: flex; flex-direction: column;
         }
 
         .modal-box {
@@ -52,7 +52,6 @@
             transition: transform 0.15s, filter 0.15s;
         }
         .action-btn:hover { filter: brightness(1.2); transform: translateY(-1px); }
-        .back-btn { background: var(--panel-bg-alt); color: var(--text-color); border: 1px solid var(--border-color); margin-top: 10px; padding: 12px; font-size: 16px; }
         
         .custom-select {
             background: var(--input-bg); color: var(--text-color); border: 1px solid var(--border-color);
@@ -66,82 +65,87 @@
     <link rel="prefetch" href="cookie-core.js">
 </head>
 <body class="chat-bg">
-    <div class="modal-box">
-        <h2><img src="Assets/Settings.svg" alt="" style="width: 24px; height: 24px; vertical-align: middle; margin-right: 8px; filter: brightness(0) invert(1);">Settings</h2>
-        
-        <div class="setting-row">
-            <span class="setting-label">Theme</span>
-            <select id="select-theme" class="custom-select">
-                <option value="dark">Dark</option>
-                <option value="light">Light</option>
-            </select>
-        </div>
-
-        <div class="setting-row">
-            <span class="setting-label">Enable Cookie Game</span>
-            <label class="toggle-switch">
-                <input type="checkbox" id="toggle-cookie-game" checked>
-                <span class="slider"></span>
-            </label>
-        </div>
-
-        <div class="setting-row">
-            <span class="setting-label">Sounds</span>
-            <label class="toggle-switch">
-                <input type="checkbox" id="toggle-mute">
-                <span class="slider"></span>
-            </label>
-        </div>
-        
-
-
-        <div class="setting-section-title">Media Settings</div>
-
-        <div class="setting-row">
-            <div class="setting-label-group">
-                <span class="setting-label">Provider</span>
-                <span class="setting-hint">Used when Auto-Select is off.</span>
-            </div>
-            <select id="select-media-source" class="custom-select"></select>
-        </div>
-
-        <div class="setting-row">
-            <span class="setting-label">Auto-Select</span>
-            <label class="toggle-switch">
-                <input type="checkbox" id="toggle-media-auto">
-                <span class="slider"></span>
-            </label>
-        </div>
-
-        <div class="setting-row">
-            <div class="setting-label-group">
-                <span class="setting-label">Shield</span>
-                <span class="setting-hint">Blocks provider popups and redirects.</span>
-            </div>
-            <label class="toggle-switch">
-                <input type="checkbox" id="toggle-media-shield">
-                <span class="slider"></span>
-            </label>
-        </div>
-
-        <div class="setting-row">
-            <span class="setting-label">Reset Progress</span>
-            <button class="action-btn material-nav-btn" style="--expanded-width: 180px;" id="btn-reset-stats">
-                <img src="Assets/Delete.svg" alt=""><span>Reset Progress</span>
+    <header>
+        <h1 onclick="location.href='index.html'" style="cursor:pointer">Nexus Settings</h1>
+        <div class="controls">
+            <button onclick="location.href='index.html'" class="material-nav-btn" style="--expanded-width: 104px;">
+                <img src="Assets/media-back-arrow.svg" alt=""><span>Home</span>
             </button>
         </div>
+    </header>
+    <main style="display:flex; align-items:center; justify-content:center; flex:1; overflow:hidden; width:100%;">
+        <div class="modal-box">
+            <h2><img src="Assets/Settings.svg" alt="" style="width: 24px; height: 24px; vertical-align: middle; margin-right: 8px; filter: brightness(0) invert(1);">Settings</h2>
+            
+            <div class="setting-row">
+                <span class="setting-label">Theme</span>
+                <select id="select-theme" class="custom-select">
+                    <option value="dark">Dark</option>
+                    <option value="light">Light</option>
+                </select>
+            </div>
 
-        <div class="setting-row">
-            <span class="setting-label">Reset Tutorial</span>
-            <button class="action-btn material-nav-btn" style="--expanded-width: 180px;" id="btn-reset-tutorial">
-                <img src="Assets/Active Timer.svg" alt=""><span>Reset Tutorial</span>
-            </button>
+            <div class="setting-row">
+                <span class="setting-label">Enable Cookie Game</span>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="toggle-cookie-game" checked>
+                    <span class="slider"></span>
+                </label>
+            </div>
+
+            <div class="setting-row">
+                <span class="setting-label">Sounds</span>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="toggle-mute">
+                    <span class="slider"></span>
+                </label>
+            </div>
+            
+
+            <div class="setting-section-title">Media Settings</div>
+
+            <div class="setting-row">
+                <div class="setting-label-group">
+                    <span class="setting-label">Provider</span>
+                    <span class="setting-hint">Used when Auto-Select is off.</span>
+                </div>
+                <select id="select-media-source" class="custom-select"></select>
+            </div>
+
+            <div class="setting-row">
+                <span class="setting-label">Auto-Select</span>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="toggle-media-auto">
+                    <span class="slider"></span>
+                </label>
+            </div>
+
+            <div class="setting-row">
+                <div class="setting-label-group">
+                    <span class="setting-label">Shield</span>
+                    <span class="setting-hint">Blocks provider popups and redirects.</span>
+                </div>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="toggle-media-shield">
+                    <span class="slider"></span>
+                </label>
+            </div>
+
+            <div class="setting-row">
+                <span class="setting-label">Reset Progress</span>
+                <button class="material-nav-btn" style="--expanded-width: 174px;" id="btn-reset-stats">
+                    <img src="Assets/Delete.svg" alt=""><span>Reset Progress</span>
+                </button>
+            </div>
+
+            <div class="setting-row">
+                <span class="setting-label">Reset Tutorial</span>
+                <button class="material-nav-btn" style="--expanded-width: 174px;" id="btn-reset-tutorial">
+                    <img src="Assets/Active Timer.svg" alt=""><span>Reset Tutorial</span>
+                </button>
+            </div>
         </div>
-
-        <button class="action-btn material-nav-btn back-btn" onclick="location.href='index.html'" style="--expanded-width: 160px;">
-            <img src="Assets/media-back-arrow.svg" alt=""><span>Back to Home</span>
-        </button>
-    </div>
+    </main>
 
     <script>
         // Theme

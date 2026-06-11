@@ -664,7 +664,26 @@ window.addEventListener('DOMContentLoaded', () => {
     document.getElementById('btn-nav-chat').onclick = () => { location.href = 'chat.html'; };
     document.getElementById('btn-nav-media').onclick = () => { location.href = 'media.html'; };
     document.getElementById('btn-nav-settings').onclick = () => { location.href = 'settings.html'; };
-    document.getElementById('proxy-btn').onclick = () => { location.href = 'gust.html'; };
+    document.getElementById('proxy-btn').onclick = () => {
+        const win = window.open('about:blank', '_blank');
+        if (win) {
+            win.document.title = "GUST Browser";
+            win.document.body.style.margin = '0';
+            win.document.body.style.padding = '0';
+            win.document.body.style.overflow = 'hidden';
+            const iframe = win.document.createElement('iframe');
+            iframe.style.position = 'fixed';
+            iframe.style.top = '0';
+            iframe.style.left = '0';
+            iframe.style.width = '100%';
+            iframe.style.height = '100%';
+            iframe.style.border = 'none';
+            iframe.src = window.location.href.substring(0, window.location.href.lastIndexOf('/') + 1) + 'gust.html';
+            win.document.body.appendChild(iframe);
+        } else {
+            alert('Pop-up blocked! Please allow pop-ups to open the proxy.');
+        }
+    };
 
 
     DOM.hideMenuBtn.onclick = (e) => { e.preventDefault(); toggleMenus(); };
