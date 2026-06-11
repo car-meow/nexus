@@ -81,7 +81,7 @@ const splashes = [
     "Assisted by Jayden!", "No, please don't close my ta-", "Y'all, Vivian says hi!",
     "Wait, wait, I was about to finish the level!", "READ the TUTORIAL!", "Dead.",
     "Wow. Just... wow.", "Honorable mention: Ctrl+W.", "Iso bottom frags",
-    "Thanks for using Toothbrush!", "Yo Dhruva, wassup? Join the chat room!",
+    "Thanks for using Nexus!", "Yo Dhruva, wassup? Join the chat room!",
     "Master, I'm hungry", "No food for you!", "Prompted to perfection.",
     "ALT+TAB is your best friend.", "AI solved the math, I solved the level.",
     "High scores > GPA.", "Saving progress... hopefully.", "Not a bug, it's a feature.",
@@ -223,7 +223,7 @@ function animateCookies(now) {
 }
 
 function startSpawning() {
-    if (localStorage.getItem('tb_cookie_disabled') === 'true') return;
+    if (localStorage.getItem('tb_cookie_disabled') !== 'false') return;
     if (spawnTimer) clearInterval(spawnTimer);
     const interval = getSpawnInterval();
     spawnTimer = setInterval(() => {
@@ -635,7 +635,7 @@ function closeAllModals() {
 window.addEventListener('DOMContentLoaded', () => {
     cacheDom();
 
-    if (localStorage.getItem('tb_cookie_disabled') === 'true') {
+    if (localStorage.getItem('tb_cookie_disabled') !== 'false') {
         if (DOM.cookieLayer) DOM.cookieLayer.style.display = 'none';
         if (DOM.floatLayer) DOM.floatLayer.style.display = 'none';
         const hudTopLeft = document.getElementById('hud-top-left');
@@ -658,16 +658,67 @@ window.addEventListener('DOMContentLoaded', () => {
     requestAnimationFrame(animateCookies);
 
 
-    document.getElementById('toothbrush-logo').onclick = (e) => { e.preventDefault(); cycleSplash(); };
+    document.getElementById('nexus-logo').onclick = (e) => { e.preventDefault(); cycleSplash(); };
     document.getElementById('btn-nav-games').onclick = () => { location.href = 'carmeow.html'; };
     document.getElementById('btn-nav-ai').onclick = () => { location.href = 'ai.html'; };
     document.getElementById('btn-nav-chat').onclick = () => { location.href = 'chat.html'; };
     document.getElementById('btn-nav-media').onclick = () => { location.href = 'media.html'; };
     document.getElementById('btn-nav-settings').onclick = () => { location.href = 'settings.html'; };
     document.getElementById('proxy-btn').onclick = () => {
-        const source = localStorage.getItem('tb_proxy_source') || 'gust.html';
-        const win = window.open(source, '_blank');
+        const DEFAULT_PROXY_SOURCE = 'nexus-proxy';
+        const savedProxySource = localStorage.getItem('tb_proxy_source') || DEFAULT_PROXY_SOURCE;
+        const knownProxySources = new Set([DEFAULT_PROXY_SOURCE, 'toothbrush-55gms', 'gust.html', 'helios.html']);
+        const source = knownProxySources.has(savedProxySource) ? savedProxySource : DEFAULT_PROXY_SOURCE;
+        const win = window.open('about:blank', '_blank');
         if (!win) return alert("Pop-up Blocked! Please allow pop-ups.");
+        if (source === DEFAULT_PROXY_SOURCE || source === 'toothbrush-55gms') {
+            win.document.open();
+            win.document.write(`<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Nexus Proxy</title>
+<style>
+html,body{height:100%;margin:0;background:#0c0c0c;color:#fff;font-family:Arial,sans-serif}
+body{display:flex;align-items:center;justify-content:center}
+main{width:min(720px,calc(100% - 32px));text-align:center}
+h1{font-size:44px;margin:0 0 26px;font-weight:800}
+form{display:flex;gap:10px}
+input{flex:1;padding:15px 16px;border:1px solid #fff;border-radius:999px;background:rgba(255,255,255,.08);color:#fff;font-size:16px;outline:none}
+button{padding:0 22px;border:1px solid #fff;border-radius:999px;background:rgba(255,255,255,.08);color:#fff;font-weight:800;cursor:pointer}
+@media(max-width:600px){h1{font-size:34px}form{flex-direction:column}button{padding:14px}}
+</style>
+</head>
+<body>
+<main>
+<h1>Nexus Proxy</h1>
+<form id="proxy-home-form">
+<input id="proxy-home-input" autocomplete="off" autofocus placeholder="Search or enter a URL">
+<button type="submit">Go</button>
+</form>
+</main>
+<script>
+function toProxyUrl(rawValue) {
+  var value = (rawValue || '').trim();
+  if (!value) return '';
+  var hasProtocol = /^https?:\\/\\//i.test(value);
+  var looksLikeUrl = hasProtocol || (value.indexOf('.') !== -1 && value.indexOf(' ') === -1);
+  var target = hasProtocol ? value : (looksLikeUrl ? 'https://' + value : 'https://duckduckgo.com/?q=' + encodeURIComponent(value));
+  return 'https://55gms.app/embed.html#' + target;
+}
+document.getElementById('proxy-home-form').addEventListener('submit', function(event) {
+  event.preventDefault();
+  var nextUrl = toProxyUrl(document.getElementById('proxy-home-input').value);
+  if (nextUrl) window.location.href = nextUrl;
+});
+<\/script>
+</body>
+</html>`);
+            win.document.close();
+        } else {
+            win.location.href = source;
+        }
     };
 
 
@@ -752,4 +803,190 @@ window.addEventListener('DOMContentLoaded', () => {
 
     G.lastSeen = Date.now();
     saveGame();
+    
+    // Launch the in-app tutorial
+    startTutorial();
 });
+
+// ==================== IN-APP TUTORIAL SYSTEM ====================
+function positionTutorialPopup() {
+    const btn = document.getElementById('btn-nav-games');
+    const popup = document.getElementById('tutorial-popup');
+    const ring = document.getElementById('tutorial-highlight-ring');
+    if (!btn || !popup) return;
+
+    const btnRect = btn.getBoundingClientRect();
+    const popupHeight = popup.offsetHeight || 80;
+    
+    const left = btnRect.left + (btnRect.width / 2);
+    const top = btnRect.top - popupHeight - 40 + window.scrollY;
+
+    popup.style.left = left + 'px';
+    popup.style.top = top + 'px';
+    popup.style.transform = 'translateX(-50%)';
+
+    if (ring) {
+        const pad = 6;
+        ring.style.left = (btnRect.left - pad + window.scrollX) + 'px';
+        ring.style.top = (btnRect.top - pad + window.scrollY) + 'px';
+    }
+
+    drawCurvedLine();
+}
+
+function drawCurvedLine() {
+    const btn = document.getElementById('btn-nav-games');
+    const popup = document.getElementById('tutorial-popup');
+    let svg = document.getElementById('tutorial-svg');
+    
+    if (!btn || !popup) return;
+    
+    if (!svg) {
+        svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        svg.id = 'tutorial-svg';
+        svg.style.position = 'absolute';
+        svg.style.top = '0';
+        svg.style.left = '0';
+        svg.style.width = '100%';
+        svg.style.height = '100%';
+        svg.style.zIndex = '100001';
+        svg.style.pointerEvents = 'none';
+        document.body.appendChild(svg);
+    }
+    
+    const btnRect = btn.getBoundingClientRect();
+    const popupRect = popup.getBoundingClientRect();
+    
+    const x1 = popupRect.left + popupRect.width / 2 + window.scrollX;
+    const y1 = popupRect.bottom + window.scrollY;
+    
+    const x2 = btnRect.left + btnRect.width / 2 + window.scrollX;
+    const y2 = btnRect.top + window.scrollY;
+    
+    const cx = (x1 + x2) / 2 - 25;
+    const cy = (y1 + y2) / 2;
+    
+    svg.innerHTML = `
+        <path d="M ${x1} ${y1} Q ${cx} ${cy} ${x2} ${y2}" 
+              fill="none" 
+              stroke="rgba(255, 255, 255, 0.45)" 
+              stroke-width="3" 
+              stroke-linecap="round" />
+    `;
+}
+
+function startTutorial() {
+    const played = localStorage.getItem('tb_tutorial_played') === 'true';
+    const skipped = localStorage.getItem('tb_tutorial_skipped') === 'true';
+    if (played || skipped) return;
+
+    // Show Overlay
+    let overlay = document.getElementById('tutorial-overlay');
+    if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.id = 'tutorial-overlay';
+        overlay.className = 'tutorial-overlay';
+        document.body.appendChild(overlay);
+    }
+    overlay.style.display = 'block';
+
+    // Highlight button
+    const btn = document.getElementById('btn-nav-games');
+    if (btn) {
+        btn.classList.add('tutorial-highlight');
+        
+        const btnRect = btn.getBoundingClientRect();
+        let ring = document.getElementById('tutorial-highlight-ring');
+        if (!ring) {
+            ring = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+            ring.id = 'tutorial-highlight-ring';
+            ring.setAttribute('class', 'tutorial-highlight-ring');
+            
+            const pad = 6;
+            const w = btnRect.width + pad * 2;
+            const h = btnRect.height + pad * 2;
+            ring.style.width = w + 'px';
+            ring.style.height = h + 'px';
+            
+            ring.innerHTML = `
+                <defs>
+                    <linearGradient id="ring-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stop-color="#ffffff" />
+                        <stop offset="25%" stop-color="#777777" />
+                        <stop offset="50%" stop-color="#ffffff" />
+                        <stop offset="75%" stop-color="#777777" />
+                        <stop offset="100%" stop-color="#ffffff" />
+                    </linearGradient>
+                </defs>
+                <rect x="2" y="2" width="${w - 4}" height="${h - 4}" rx="16" fill="none" stroke="url(#ring-grad)" stroke-width="2" stroke-dasharray="8,6" />
+            `;
+            document.body.appendChild(ring);
+        }
+        
+        const originalOnClick = btn.onclick;
+        btn.onclick = (e) => {
+            localStorage.setItem('tb_tutorial_played', 'true');
+            btn.classList.remove('tutorial-highlight');
+            if (overlay) overlay.style.display = 'none';
+            
+            const popup = document.getElementById('tutorial-popup');
+            if (popup) popup.remove();
+            
+            const ringEl = document.getElementById('tutorial-highlight-ring');
+            if (ringEl) ringEl.remove();
+            
+            const svgEl = document.getElementById('tutorial-svg');
+            if (svgEl) svgEl.remove();
+            
+            window.removeEventListener('resize', positionTutorialPopup);
+            
+            if (typeof originalOnClick === 'function') {
+                originalOnClick.call(btn, e);
+            } else {
+                location.href = 'carmeow.html';
+            }
+        };
+    }
+
+    // Create popup window next to Games button
+    let popup = document.getElementById('tutorial-popup');
+    if (!popup) {
+        popup = document.createElement('div');
+        popup.id = 'tutorial-popup';
+        popup.className = 'tutorial-popup';
+        popup.innerHTML = `
+            <div class="tutorial-content">Welcome to Nexus! Click Games to get started.</div>
+            <span class="tutorial-skip" id="tutorial-skip-btn">Skip</span>
+        `;
+        document.body.appendChild(popup);
+        
+        document.getElementById('tutorial-skip-btn').onclick = (e) => {
+            e.stopPropagation();
+            skipTutorial();
+        };
+    }
+    
+    // Position popup and set up listeners
+    setTimeout(positionTutorialPopup, 50);
+    window.addEventListener('resize', positionTutorialPopup);
+}
+
+function skipTutorial() {
+    localStorage.setItem('tb_tutorial_skipped', 'true');
+    const overlay = document.getElementById('tutorial-overlay');
+    if (overlay) overlay.style.display = 'none';
+    
+    const btn = document.getElementById('btn-nav-games');
+    if (btn) btn.classList.remove('tutorial-highlight');
+    
+    const popup = document.getElementById('tutorial-popup');
+    if (popup) popup.remove();
+    
+    const ringEl = document.getElementById('tutorial-highlight-ring');
+    if (ringEl) ringEl.remove();
+    
+    const svgEl = document.getElementById('tutorial-svg');
+    if (svgEl) svgEl.remove();
+    
+    window.removeEventListener('resize', positionTutorialPopup);
+}

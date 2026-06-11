@@ -8,35 +8,35 @@
 }
 
 :root {
-    --bg-color: #121212;
-    --text-color: #e0e0e0;
-    --panel-bg: #1a1a1a;
-    --panel-bg-alt: #1f1f1f;
-    --border-color: #333;
-    --zigzag-bg: #1a1a1a;
-    --zigzag-line: #1f1f1f;
-    --input-bg: #121212;
-    --modal-bg: #1f1f1f;
+    --bg-color: #0b0713;
+    --text-color: #e2dcf0;
+    --panel-bg: #130d22;
+    --panel-bg-alt: #1c1430;
+    --border-color: #362854;
+    --zigzag-bg: #130d1a;
+    --zigzag-line: #191222;
+    --input-bg: #0d0818;
+    --modal-bg: #18102b;
     --title-color: #ffffff;
-    --splash-color: #B8860B;
-    --settings-row-bg: #222;
+    --splash-color: #D083DE;
+    --settings-row-bg: #22163b;
     --settings-label-color: #ffffff;
 }
 
 html.light-mode {
-    --bg-color: #bbbbbb;
-    --text-color: #121212;
-    --panel-bg: #e0e0e0;
-    --panel-bg-alt: #ffffff;
-    --border-color: #ccc;
-    --zigzag-bg: #e0e0e0;
-    --zigzag-line: #ffffff;
+    --bg-color: #eae6f0;
+    --text-color: #120c1f;
+    --panel-bg: #dcd6e8;
+    --panel-bg-alt: #f0ecf7;
+    --border-color: #c4b9d6;
+    --zigzag-bg: #e5def0;
+    --zigzag-line: #faf9fc;
     --input-bg: #ffffff;
     --modal-bg: #ffffff;
-    --title-color: #333333;
-    --splash-color: #B8860B;
-    --settings-row-bg: #e0e0e0;
-    --settings-label-color: #121212;
+    --title-color: #2c1a4d;
+    --splash-color: #D083DE;
+    --settings-row-bg: #e8e2f2;
+    --settings-label-color: #120c1f;
 }
 
 body {
@@ -63,7 +63,7 @@ body {
     }
 
     to {
-        background-position: 540px 500px, 540px 500px, 500px 500px, 500px 500px;
+        background-position: 440px 400px, 440px 400px, 400px 400px, 400px 400px;
     }
 }
 
@@ -116,6 +116,35 @@ h1 {
     display: inline-flex;
     align-items: center;
     justify-content: center;
+}
+
+body:not(.media-bg) button,
+body:not(.media-bg) .save-btn,
+body:not(.media-bg) .nav-btn,
+body:not(.media-bg) .hud-btn,
+body:not(.media-bg) .action-btn,
+body:not(.media-bg) .buy-btn,
+body:not(.media-bg) .incinerate-btn,
+body:not(.media-bg) .rename-done-btn {
+    background: rgba(255, 255, 255, 0.08) !important;
+    border: 1.5px solid rgba(255, 255, 255, 0.92) !important;
+    color: #ffffff !important;
+    text-shadow: none !important;
+    box-shadow: none;
+}
+
+body:not(.media-bg) button:hover,
+body:not(.media-bg) .save-btn:hover,
+body:not(.media-bg) .nav-btn:hover,
+body:not(.media-bg) .hud-btn:hover,
+body:not(.media-bg) .action-btn:hover,
+body:not(.media-bg) .buy-btn:hover,
+body:not(.media-bg) .incinerate-btn:hover,
+body:not(.media-bg) .rename-done-btn:hover {
+    background: rgba(255, 255, 255, 0.16) !important;
+    border-color: #ffffff !important;
+    color: #ffffff !important;
+    filter: none;
 }
 
 .save-btn:hover,
@@ -175,6 +204,25 @@ h1 {
     transition: opacity 0.5s;
 }
 
+.home-bg-video {
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: 100vh;
+    object-fit: cover;
+    z-index: 0;
+    pointer-events: none;
+}
+
+.home-screen::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    background: rgba(0, 0, 0, 0.28);
+}
+
 .title-area {
     flex: 1;
     display: flex;
@@ -214,6 +262,67 @@ h1 {
     font-size: 22px;
     padding: 15px 40px;
     border-radius: 12px;
+}
+
+.home-screen .material-nav-btn {
+    width: 72px;
+    height: 64px;
+    min-width: 72px;
+    padding: 0 19px !important;
+    border-radius: 32px !important;
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 14px;
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.08) !important;
+    border: 2px solid #ffffff !important;
+    color: #ffffff !important;
+    backdrop-filter: blur(18px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.24);
+    transition:
+        width 0.3s cubic-bezier(0.2, 0, 0, 1) 0.1s,
+        background-color 0.2s ease,
+        transform 0.2s cubic-bezier(0.2, 0, 0, 1),
+        box-shadow 0.2s ease;
+}
+
+.home-screen .material-nav-btn:hover,
+.home-screen .material-nav-btn:focus-visible {
+    width: var(--expanded-width);
+    background: rgba(255, 255, 255, 0.17) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.28);
+    transition:
+        width 0.3s cubic-bezier(0.2, 0, 0, 1),
+        background-color 0.2s ease,
+        transform 0.2s cubic-bezier(0.2, 0, 0, 1),
+        box-shadow 0.2s ease;
+}
+
+.home-screen .material-nav-btn img {
+    width: 30px;
+    height: 30px;
+    flex: 0 0 30px;
+    object-fit: contain;
+    filter: brightness(0) invert(1);
+}
+
+.home-screen .material-nav-btn span {
+    display: inline-block;
+    opacity: 0;
+    color: #ffffff;
+    font-size: 21px;
+    font-weight: 700;
+    white-space: nowrap;
+    line-height: 1;
+    transition: opacity 0.1s ease;
+}
+
+.home-screen .material-nav-btn:hover span,
+.home-screen .material-nav-btn:focus-visible span {
+    opacity: 1;
+    transition: opacity 0.2s ease 0.3s;
 }
 
 /* =========================================
@@ -297,8 +406,8 @@ body.app-is-dragging #game-list li:not(.dragging):has(.trash-btn:hover) {
 }
 
 body.app-is-dragging #game-list li:not(.dragging).ugs-item:hover {
-    background-color: #5986da !important;
-    border-color: #153466 !important;
+    background-color: #ffffff !important;
+    border-color: #ffffff !important;
 }
 
 body.app-is-dragging #game-list li:not(.dragging):not(.ugs-item):hover {
@@ -307,14 +416,16 @@ body.app-is-dragging #game-list li:not(.dragging):not(.ugs-item):hover {
 }
 
 .ugs-item {
-    background-color: #5986da !important;
-    border: 1px solid #153466 !important;
-    color: white !important;
+    background-color: #ffffff !important;
+    border: 1px solid #ffffff !important;
+    color: var(--panel-bg) !important;
     font-weight: bold;
 }
 
 .ugs-item:hover {
-    background-color: #153466 !important;
+    background-color: #fafafa !important;
+    border-color: #fafafa !important;
+    color: var(--panel-bg) !important;
 }
 
 .game-title {
@@ -911,7 +1022,7 @@ iframe {
 #splash-text {
     font-size: 14px;
     font-style: italic;
-    color: #FFEB3B;
+    color: #858585;
     margin-left: 10px;
     font-weight: normal;
     animation: splash-pulse 2s infinite ease-in-out;

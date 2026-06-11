@@ -58,6 +58,13 @@ async function loadGames() {
 
     if (pinMasterStash()) saveGameOrder();
     renderGameList();
+    openDefaultGame();
+}
+
+function openDefaultGame() {
+    if (currentGame || !document.getElementById('game-frame')) return;
+    const preferredGame = games.find(g => g.id === "ugs-stash") || games[0];
+    if (preferredGame) loadGame(preferredGame);
 }
 
 function pinMasterStash() {
@@ -475,15 +482,9 @@ document.addEventListener('keydown', (e) => {
     }
 });
 
-// Chromebook Universal Tab Killer
+// Keep the main Nexus tab available after opening fullscreen or proxy windows.
 function killMainTab() {
-    document.title = "New Tab";
-    document.body.innerHTML = ""; 
-    window.open('', '_self');
-    window.close();
-    
-    // UPDATED: Now redirects to about:blank instead of Google Classroom
-    setTimeout(() => { window.location.replace("about:blank"); }, 300);
+    return false;
 }
 
 function applyPopupMuteState(muted) {
@@ -543,7 +544,7 @@ if (exportBtn) {
             // Try to open the modern Save File Picker instantly to capture user gesture
             if ('showSaveFilePicker' in window) {
                 fileHandle = await window.showSaveFilePicker({
-                    suggestedName: 'toothbrush_backup.json',
+                    suggestedName: 'nexus_backup.json',
                     types: [{
                         description: 'JSON Backup Files',
                         accept: {
@@ -641,7 +642,7 @@ if (exportBtn) {
                 const blob = new Blob([jsonStr], { type: 'application/json' });
                 const a = document.createElement('a');
                 a.href = URL.createObjectURL(blob);
-                a.download = 'toothbrush_backup.json';
+                a.download = 'nexus_backup.json';
                 a.click();
             }
         } catch (e) {
@@ -657,11 +658,11 @@ if (exportBtn) {
 const proxyBtn = document.getElementById('proxy-btn');
 if (proxyBtn) {
     proxyBtn.onclick = () => {
-        const DEFAULT_PROXY_SOURCE = 'toothbrush-55gms';
+        const DEFAULT_PROXY_SOURCE = 'nexus-proxy';
         const savedProxySource = localStorage.getItem('tb_proxy_source') || DEFAULT_PROXY_SOURCE;
-        const knownProxySources = new Set([DEFAULT_PROXY_SOURCE, 'gust.html', 'helios.html']);
+        const knownProxySources = new Set([DEFAULT_PROXY_SOURCE, 'toothbrush-55gms', 'gust.html', 'helios.html']);
         const proxySource = knownProxySources.has(savedProxySource) ? savedProxySource : DEFAULT_PROXY_SOURCE;
-        const isToothbrushProxy = proxySource === DEFAULT_PROXY_SOURCE;
+        const isNexusProxy = proxySource === DEFAULT_PROXY_SOURCE || proxySource === 'toothbrush-55gms';
         const toProxiedUrl = (rawValue) => {
             const value = (rawValue || '').trim();
             if (!value) return 'https://55gms.app/new.html';
@@ -674,12 +675,12 @@ if (proxyBtn) {
                     : `https://duckduckgo.com/?q=${encodeURIComponent(value)}`;
             return `https://55gms.app/embed.html#${target}`;
         };
-        const toothbrushProxyHome = `<!DOCTYPE html>
+        const nexusProxyHome = `<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Toothbrush Proxy</title>
+<title>Nexus Proxy</title>
 <style>
 html,body{height:100%;margin:0;background:#151515;color:#fff;font-family:Arial,sans-serif}
 body{display:flex;align-items:center;justify-content:center}
@@ -694,7 +695,7 @@ button{padding:0 18px;border:0;border-radius:8px;background:#5fc772;color:#10101
 </head>
 <body>
 <main class="home">
-<h1>Toothbrush Proxy</h1>
+<h1>Nexus Proxy</h1>
 <form id="proxy-home-form">
 <input id="proxy-home-input" autocomplete="off" autofocus placeholder="Search or enter a URL">
 <button type="submit">Go</button>
@@ -745,7 +746,7 @@ document.getElementById('proxy-home-form').addEventListener('submit', function(e
         backBtn.onclick = () => win.close();
         
         const title = win.document.createElement('span');
-        title.textContent = 'Toothbrush Proxy';
+        title.textContent = 'Nexus Proxy';
         title.style.fontWeight = 'bold';
         title.style.marginRight = '15px';
 
@@ -761,7 +762,7 @@ document.getElementById('proxy-home-form').addEventListener('submit', function(e
             backgroundColor: '#2c2c2c',
             color: '#fff',
             outline: 'none',
-            display: isToothbrushProxy ? 'block' : 'none'
+            display: isNexusProxy ? 'block' : 'none'
         });
         address.addEventListener('keydown', (e) => {
             if (e.key !== 'Enter') return;
@@ -782,8 +783,8 @@ document.getElementById('proxy-home-form').addEventListener('submit', function(e
             position: 'fixed', top: '40px', left: '0', width: '100%', height: 'calc(100% - 40px)',
             border: 'none', margin: '0', padding: '0', overflow: 'hidden'
         });
-        if (isToothbrushProxy) {
-            iframe.srcdoc = toothbrushProxyHome;
+        if (isNexusProxy) {
+            iframe.srcdoc = nexusProxyHome;
         } else {
             iframe.src = proxySource;
         }
@@ -803,7 +804,7 @@ document.getElementById('proxy-home-form').addEventListener('submit', function(e
             }
         });
         
-        // Kill the original tab
+        // Leave the original tab open for quick return.
         killMainTab();
     };
 }
