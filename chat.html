@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>New Tab</title>
-    <link rel="stylesheet" href="style.css?v=50">
+    <link rel="stylesheet" href="style.css?v=53">
     <script>
         (function() {
             const theme = localStorage.getItem('tb_theme') || 'dark';
@@ -53,8 +53,27 @@
     <link rel="prefetch" href="cookie-core.js">
 </head>
 <body class="chat-bg">
+    <div id="page-fade-overlay"></div>
+    <script>
+        (function() {
+            const overlay = document.getElementById('page-fade-overlay');
+            if (overlay) {
+                requestAnimationFrame(() => {
+                    overlay.classList.add('fade-out');
+                });
+            }
+            window.navigateWithFade = function(url) {
+                if (overlay) {
+                    overlay.classList.remove('fade-out');
+                    setTimeout(() => { location.href = url; }, 370);
+                } else {
+                    location.href = url;
+                }
+            };
+        })();
+    </script>
     <header>
-        <h1 onclick="location.href='index.html'" style="cursor:pointer">Nexus Chat</h1>
+        <h1 onclick="navigateWithFade('index.html')" style="cursor:pointer">Nexus Chat</h1>
         
         <div class="status-header">
             <div id="status-dot" class="status-dot"></div>
@@ -75,13 +94,13 @@
         </div>
 
         <div class="controls">
-            <button id="reroll-btn" class="material-nav-btn" style="--expanded-width: 190px; display:none;">
+            <button id="reroll-btn" class="material-nav-btn" style="--expanded-width: 210px; display:none;">
                 <img src="Assets/Rename.svg" alt=""><span>Re-Roll Username</span>
             </button>
-            <button id="disband-btn" class="material-nav-btn" style="--expanded-width: 120px; display:none;">
+            <button id="disband-btn" class="material-nav-btn" style="--expanded-width: 128px; display:none;">
                 <img src="Assets/Delete.svg" alt=""><span>Disband</span>
             </button>
-            <button id="chat-back-btn" onclick="location.href='index.html'" class="material-nav-btn" style="--expanded-width: 104px;">
+            <button id="chat-back-btn" onclick="navigateWithFade('index.html')" class="material-nav-btn" style="--expanded-width: 104px;">
                 <img src="Assets/media-back-arrow.svg" alt=""><span>Home</span>
             </button>
         </div>
@@ -135,7 +154,7 @@
             if (timeoutEnd && Date.now() < parseInt(timeoutEnd)) {
                 const timeLeft = Math.ceil((parseInt(timeoutEnd) - Date.now()) / 1000);
                 alert(`You are currently in a timeout from being kicked. Please wait ${timeLeft} seconds.`);
-                location.href = 'index.html'; return; 
+                navigateWithFade('index.html'); return; 
             } else if (timeoutEnd) { localStorage.removeItem('tb_chat_timeout'); }
 
             // --- 2. IDENTITY PERSISTENCE ---
@@ -355,7 +374,7 @@
                         isDisconnecting = true;
                         localStorage.setItem('tb_chat_timeout', Date.now() + 60000); 
                         alert("You have been kicked! You are timed out for 1 minute."); 
-                        location.href = 'index.html'; 
+                        navigateWithFade('index.html'); 
                     }
                 }
                 

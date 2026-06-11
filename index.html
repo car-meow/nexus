@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <title>New Tab</title>
-<link rel="stylesheet" href="style.css?v=50">
+<link rel="stylesheet" href="style.css?v=53">
     <script>
         (function() {
             const theme = localStorage.getItem('tb_theme') || 'dark';
@@ -79,7 +79,7 @@ body {
     z-index: 5; transition: opacity 0.5s, visibility 0.5s; width: 90%;
     pointer-events: none;
 }
-.title-area { display: flex; flex-direction: column; align-items: center; margin-bottom: 40px; }
+.title-area { display: flex; flex-direction: column; align-items: center; margin-bottom: 10px; }
 .home-title {
     font-size: 80px; color: var(--title-color); margin: 0; letter-spacing: 2px; cursor: pointer;
     text-shadow: 4px 4px 15px rgba(0,0,0,0.8);
@@ -91,15 +91,7 @@ body {
     text-align: center; max-width: 500px; transition: opacity 0.15s;
 }
 .button-row { display: flex; justify-content: center; gap: 18px; flex-wrap: wrap; }
-.home-btn {
-    font-size: 22px; padding: 16px 40px; border-radius: 12px; border: none; cursor: pointer;
-    font-weight: bold; color: #fff; text-shadow: 1px 1px 3px rgba(0,0,0,0.8);
-    transition: transform 0.2s cubic-bezier(0.175,0.885,0.32,1.275), filter 0.2s;
-    pointer-events: auto !important; z-index: 10 !important; position: relative;
-    touch-action: manipulation; -webkit-tap-highlight-color: transparent;
-}
-.home-btn:hover { filter: brightness(1.1); transform: translateY(-3px); box-shadow: 0 6px 15px rgba(0,0,0,0.4); }
-.home-btn:active { transform: translateY(2px); filter: brightness(1.5); transition-duration: 0.05s; }
+
 .rainbow-btn {
     background: linear-gradient(45deg,#ff0000,#ff7300,#fffb00,#48ff00,#00ffd5,#002bff,#7a00ff,#ff00c8,#ff0000);
     background-size: 400%; animation: rainbow-shift 10s ease infinite;
@@ -387,13 +379,25 @@ body {
 }
 
 
+
+@keyframes homeEnter {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+.home-container {
+    animation: homeEnter 0.5s ease-out both;
+}
+
 </style>
 </head>
 <body class="home-screen">
 
-<video class="home-bg-video" autoplay muted loop playsinline aria-hidden="true">
+<video class="home-bg-video" autoplay muted loop playsinline preload="auto" aria-hidden="true">
     <source src="Assets/loopBG.mp4" type="video/mp4">
 </video>
+
+<!-- Page exit fade overlay -->
+<div id="page-fade-overlay"></div>
 
 <!-- ========== SCREEN BORDER (Vignette Flash) ========== -->
 <div id="screen-border"></div>
@@ -440,27 +444,27 @@ body {
     </div>
     <span class="home-splash" id="splash-text"></span>
     <div class="button-row">
-        <button id="btn-nav-games" class="home-btn material-nav-btn" aria-label="Games" style="--expanded-width: 138px;">
+        <button id="btn-nav-games" class="home-btn material-nav-btn" aria-label="Games" style="--expanded-width: 152px;">
             <img src="Assets/nexus-game.svg" alt="">
             <span>Games</span>
         </button>
-        <button id="btn-nav-ai" class="home-btn material-nav-btn" aria-label="AI" style="--expanded-width: 98px;">
+        <button id="btn-nav-ai" class="home-btn material-nav-btn" aria-label="AI" style="--expanded-width: 100px;">
             <img src="Assets/nexus-ai.svg" alt="">
             <span>AI</span>
         </button>
-        <button id="proxy-btn" class="home-btn material-nav-btn" aria-label="Proxy" style="--expanded-width: 132px;">
+        <button id="proxy-btn" class="home-btn material-nav-btn" aria-label="Proxy" style="--expanded-width: 140px;">
             <img src="Assets/nexus-proxy.svg" alt="">
             <span>Proxy</span>
         </button>
-        <button id="btn-nav-chat" class="home-btn material-nav-btn" aria-label="Chat" style="--expanded-width: 122px;">
+        <button id="btn-nav-chat" class="home-btn material-nav-btn" aria-label="Chat" style="--expanded-width: 130px;">
             <img src="Assets/nexus-chat.svg" alt="">
             <span>Chat</span>
         </button>
-        <button id="btn-nav-media" class="home-btn material-nav-btn" aria-label="Media" style="--expanded-width: 134px;">
+        <button id="btn-nav-media" class="home-btn material-nav-btn" aria-label="Media" style="--expanded-width: 142px;">
             <img src="Assets/nexus-media.svg" alt="">
             <span>Media</span>
         </button>
-        <button id="btn-nav-settings" class="home-btn material-nav-btn" aria-label="Settings" style="--expanded-width: 162px;">
+        <button id="btn-nav-settings" class="home-btn material-nav-btn" aria-label="Settings" style="--expanded-width: 172px;">
             <img src="Assets/nexus-settings.svg" alt="">
             <span>Settings</span>
         </button>
@@ -516,5 +520,5 @@ body {
 
 <!-- ========== JAVASCRIPT ========== -->
 <script src="cookie-core.js?v=48"></script>
-<script src="cookie-engine.js?v=49"></script></body>
+<script src="cookie-engine.js?v=51"></script></body>
 </html>

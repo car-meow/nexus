@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Media - Nexus</title>
-    <link rel="stylesheet" href="style.css?v=50">
+    <link rel="stylesheet" href="style.css?v=53">
     <link rel="prefetch" href="index.html">
     <link rel="prefetch" href="cookie-engine.js">
     <link rel="prefetch" href="cookie-core.js">
@@ -107,11 +107,30 @@
     </style>
 </head>
 <body class="media-bg chat-bg">
+    <div id="page-fade-overlay"></div>
+    <script>
+        (function() {
+            const overlay = document.getElementById('page-fade-overlay');
+            if (overlay) {
+                requestAnimationFrame(() => {
+                    overlay.classList.add('fade-out');
+                });
+            }
+            window.navigateWithFade = function(url) {
+                if (overlay) {
+                    overlay.classList.remove('fade-out');
+                    setTimeout(() => { location.href = url; }, 370);
+                } else {
+                    location.href = url;
+                }
+            };
+        })();
+    </script>
     <div class="media-sticky-stack">
         <header>
-            <h1 onclick="location.href='index.html'">Nexus Movies & TV</h1>
+            <h1 onclick="navigateWithFade('index.html')">Nexus Movies & TV</h1>
             <div class="controls">
-                <button onclick="location.href='index.html'" class="material-nav-btn" style="--expanded-width: 104px;">
+                <button onclick="navigateWithFade('index.html')" class="material-nav-btn" style="--expanded-width: 104px;">
                     <img src="Assets/media-back-arrow.svg" alt=""><span>Home</span>
                 </button>
             </div>

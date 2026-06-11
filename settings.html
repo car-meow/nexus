@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Settings - Nexus</title>
-    <link rel="stylesheet" href="style.css?v=50">
+    <link rel="stylesheet" href="style.css?v=53">
     <style>
         body {
             margin: 0; overflow: hidden; width: 100vw; height: 100vh;
@@ -65,10 +65,29 @@
     <link rel="prefetch" href="cookie-core.js">
 </head>
 <body class="chat-bg">
+    <div id="page-fade-overlay"></div>
+    <script>
+        (function() {
+            const overlay = document.getElementById('page-fade-overlay');
+            if (overlay) {
+                requestAnimationFrame(() => {
+                    overlay.classList.add('fade-out');
+                });
+            }
+            window.navigateWithFade = function(url) {
+                if (overlay) {
+                    overlay.classList.remove('fade-out');
+                    setTimeout(() => { location.href = url; }, 370);
+                } else {
+                    location.href = url;
+                }
+            };
+        })();
+    </script>
     <header>
-        <h1 onclick="location.href='index.html'" style="cursor:pointer">Nexus Settings</h1>
+        <h1 onclick="navigateWithFade('index.html')" style="cursor:pointer">Nexus Settings</h1>
         <div class="controls">
-            <button onclick="location.href='index.html'" class="material-nav-btn" style="--expanded-width: 104px;">
+            <button onclick="navigateWithFade('index.html')" class="material-nav-btn" style="--expanded-width: 104px;">
                 <img src="Assets/media-back-arrow.svg" alt=""><span>Home</span>
             </button>
         </div>

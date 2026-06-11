@@ -635,6 +635,14 @@ function closeAllModals() {
 window.addEventListener('DOMContentLoaded', () => {
     cacheDom();
 
+    // Fade page in from black on load
+    const overlay = document.getElementById('page-fade-overlay');
+    if (overlay) {
+        requestAnimationFrame(() => {
+            overlay.classList.add('fade-out');
+        });
+    }
+
     if (localStorage.getItem('tb_cookie_disabled') !== 'false') {
         if (DOM.cookieLayer) DOM.cookieLayer.style.display = 'none';
         if (DOM.floatLayer) DOM.floatLayer.style.display = 'none';
@@ -658,12 +666,23 @@ window.addEventListener('DOMContentLoaded', () => {
     requestAnimationFrame(animateCookies);
 
 
+    // Smooth fade-out before navigation
+    function navigateWithFade(url) {
+        const overlay = document.getElementById('page-fade-overlay');
+        if (overlay) {
+            overlay.classList.remove('fade-out');
+            setTimeout(() => { location.href = url; }, 370);
+        } else {
+            location.href = url;
+        }
+    }
+
     document.getElementById('nexus-logo').onclick = (e) => { e.preventDefault(); cycleSplash(); };
-    document.getElementById('btn-nav-games').onclick = () => { location.href = 'carmeow.html'; };
-    document.getElementById('btn-nav-ai').onclick = () => { location.href = 'ai.html'; };
-    document.getElementById('btn-nav-chat').onclick = () => { location.href = 'chat.html'; };
-    document.getElementById('btn-nav-media').onclick = () => { location.href = 'media.html'; };
-    document.getElementById('btn-nav-settings').onclick = () => { location.href = 'settings.html'; };
+    document.getElementById('btn-nav-games').onclick = () => { navigateWithFade('carmeow.html'); };
+    document.getElementById('btn-nav-ai').onclick = () => { navigateWithFade('ai.html'); };
+    document.getElementById('btn-nav-chat').onclick = () => { navigateWithFade('chat.html'); };
+    document.getElementById('btn-nav-media').onclick = () => { navigateWithFade('media.html'); };
+    document.getElementById('btn-nav-settings').onclick = () => { navigateWithFade('settings.html'); };
     document.getElementById('proxy-btn').onclick = () => {
         const win = window.open('about:blank', '_blank');
         if (win) {
