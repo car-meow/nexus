@@ -412,6 +412,9 @@ async function deleteGame(id, index) {
     games.splice(index, 1); 
     saveGameOrder();
     renderGameList();
+    // Auto-navigate back to Game Stash after deletion
+    const stash = games.find(g => g.id === "ugs-stash");
+    if (stash) loadGame(stash);
 }
 
 let renameTargetId = null;
@@ -528,6 +531,19 @@ const cloakBtn = document.getElementById('cloak-btn');
 if (cloakBtn) {
     cloakBtn.onclick = () => {
         if (!currentGame) return alert("Select game");
+        // Block fullscreen for Game Stash — flash icon red and fade back
+        if (currentGame.id === "ugs-stash") {
+            const icon = cloakBtn.querySelector('img');
+            if (icon) {
+                icon.style.transition = 'filter 0.15s ease';
+                icon.style.filter = 'brightness(0) saturate(100%) invert(20%) sepia(95%) saturate(6000%) hue-rotate(0deg) brightness(95%)';
+                setTimeout(() => {
+                    icon.style.transition = 'filter 0.5s ease';
+                    icon.style.filter = '';
+                }, 200);
+            }
+            return;
+        }
         const win = window.open('about:blank', '_blank');
         const gameSrc = currentGame.type === 'file' ? URL.createObjectURL(new Blob([atob(currentGame.content.split(',')[1])], {type:'text/html'})) : currentGame.url;
         win.document.title = "My Drive - Google Drive";
