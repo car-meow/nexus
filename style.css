@@ -424,7 +424,7 @@ main {
     justify-content: space-between;
     align-items: center;
     transition: all 0.2s;
-    border: 2.5px solid rgba(255, 255, 255, 0.92);
+    border: 2.5px solid #1c1430;
     position: relative;
 }
 
