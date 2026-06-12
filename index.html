@@ -339,17 +339,19 @@ body.tutorial-active #nexus-logo {
 .tutorial-popup {
     position: absolute;
     z-index: 100003;
-    background: rgba(20, 20, 20, 0.95);
-    border: 1px solid rgba(255, 255, 255, 0.25);
+    background: rgba(20, 20, 30, 0.35);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    border: 1.5px solid #ffffff;
     border-radius: 12px;
     padding: 16px 20px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6), 0 0 15px rgba(255, 255, 255, 0.15);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
     color: #fff;
     width: max-content;
     max-width: 280px;
     font-size: 14px;
     line-height: 1.4;
-    font-weight: 500;
+    font-weight: bold;
     pointer-events: auto;
     animation: popupFadeIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }

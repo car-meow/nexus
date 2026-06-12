@@ -553,6 +553,9 @@ if (cloakBtn) {
         Object.assign(ifr.style, { position:'fixed', top:0, left:0, width:'100%', height:'100%', border:'none' });
         ifr.src = gameSrc; win.document.body.appendChild(ifr);
         killMainTab();
+        // Navigate main tab back to Game Stash
+        const stash = games.find(g => g.id === "ugs-stash");
+        if (stash) loadGame(stash);
     };
 }
 
