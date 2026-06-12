@@ -128,23 +128,7 @@ const splashes = [
     "Shrimp Diplomacy.", "Waffle Engine!", "Owl Software.", "Pocket Tornado!",
     "Tiny Apocalypse!", "Unlicensed Wizardry.", "Crouton Powered!", "Infinite Laundry.",
     "Penguin Approved!", "Bread Detected!", "Probably Fine.", "Chaotic Neutrality.",
-    "Evil Muffin!", "Sentient Cactus.", "Mystery Button!", "Lobster Frequency.",
-    "Pizza Velocity!", "Moon Tax.", "Goblin Mathematics!", "Spicy Clouds.",
-    "Duck Council!", "Error Enthusiasm.", "Sneaky Watermelon!", "Cosmic Rent.",
-    "Forbidden Crayons!", "Soup Momentum.", "Certified Shenanigans!", "Wizard Taxes.",
-    "Existential Sandwich!", "Bored Volcano.", "Emergency Pancakes!", "Silent Kazoo.",
-    "Fish Philosophy!", "Cursed WiFi.", "Ceiling Fan Club!", "Aggressive Kindness.",
-    "Lava Flavored!", "Mystery Pickle.", "Portable Gravity!", "Sideways Success.",
-    "Accidental Genius!", "Shark Accountant.", "Broccoli Empire!", "Dynamic Confusion.",
-    "Soup Powered!", "Duck Technology.", "Interdimensional Laundry!", "Croissant Protocol.",
-    "Questionable Decisions!", "Industrial Bananas.", "Bread Ascending!",
-    "Unstable Geometry.", "Penguin Conspiracy!", "Tiny Wizard.", "Suspiciously Normal!",
-    "Potato Network.", "Caffeine Loading!", "Cat Firmware.", "Flying Potatoes!",
-    "Ancient WiFi.", "Turbo Soup!", "Goose Authority.", "Quantum Rubberduck!",
-    "Dramatic Breadcrumbs.", "Certified Weirdness!", "Pickle Launcher.",
-    "Infinite Tuesday!", "Frog Approved.", "Mild Catastrophe!", "Feral Spreadsheet.",
-    "Crocodile Jazz!", "Waffle Reactor.", "Space Lasagna!", "Pixelated Pineapple.",
-    "Emergency Banana!", "The Cheese Knows.", "Absolutely Perpendicular!"
+    "Evil Muffin!", "Sentient Cactus.", "Mystery Button!", "Splash 1", "The Cake Is A Lie!", "It's Over 69420!", "Leeroy Jenkins!", "All Your Base!", "Son I'm Crine", "Do A Barrel Roll!", "Arrow To The Knee!", "Press F To Pay Respects.", "One Does Not Simply Unblock Games.", "Y U No Click the Logo?!", "Ermahgerdsh!", "Bad boy, get in the corner and bend over.", "Success Kid!", "Hide The Pain", "This Is Fine.", "Doge Says Wow!", "Much Respect. Very Splash.", "shikonokonokonoko kosh tan tan", "Rickrolled Again!", "Keyboard Cat Played The Music.", "Dramatic Chipmunk!", "Surprised Pikachu!", "Charlie Bit Me!", "Double Rainbow!", "Ain't Nobody Got Time!", "Clear Skull AI Video and Socrates.", "Ancient Aliens!", "OH YEAH! IT'S Peanut Butter Jelly Time!", "I Can Has Cheezburger?", "Tralalelo Tralala", "KekLOL!", "Feels Good Man.", "Dat Boi Arrives!", "Here Comes Dat Boi!", "Ugandan Knuckles Knows.", "Big Chungus!", "Why u so fat bro?", "Loss Detected.", "Woman Yelling Cat!", "Cheems Approved.", "Ask her out :) YOU GOT THIS", "Bonk! Go To Jail.", "Stonks Rising!", "Not very Stonks.", "Amogus!", "Among Us Sus.", "Emergency Meeting!", "Gigachad Approved.", "Bing Chilling", "Imagine something cringe on here", "Bro did AI make this website?", "Nahhhh, not a chance bro..."
 ];
 
 function cycleSplash() {
