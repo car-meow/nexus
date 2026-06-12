@@ -111,11 +111,6 @@
     <script>
         (function() {
             const overlay = document.getElementById('page-fade-overlay');
-            if (overlay) {
-                requestAnimationFrame(() => {
-                    overlay.classList.add('fade-out');
-                });
-            }
             window.navigateWithFade = function(url) {
                 if (overlay) {
                     overlay.classList.remove('fade-out');
@@ -395,6 +390,10 @@
                     row.innerHTML = '<div style="color:#f44336;padding:12px;">Failed to load: ' + s.title + '</div>';
                 }
             }
+
+            // Fade page in once TMDB initialization is complete
+            const overlay = document.getElementById('page-fade-overlay');
+            if (overlay) overlay.classList.add('fade-out');
         }
 
         async function collectPagedResults(endpoint, maxPages) {

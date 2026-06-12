@@ -69,11 +69,6 @@
     <script>
         (function() {
             const overlay = document.getElementById('page-fade-overlay');
-            if (overlay) {
-                requestAnimationFrame(() => {
-                    overlay.classList.add('fade-out');
-                });
-            }
             window.navigateWithFade = function(url) {
                 if (overlay) {
                     overlay.classList.remove('fade-out');
@@ -310,6 +305,10 @@
             localStorage.removeItem('tb_tutorial_skipped');
             alert('Tutorial progress has been reset!');
         };
+
+        // Fade page in once settings are fully rendered
+        const overlay = document.getElementById('page-fade-overlay');
+        if (overlay) overlay.classList.add('fade-out');
 
     </script>
 </body>

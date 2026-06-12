@@ -79,7 +79,7 @@
     </div>
 
     <script src="game-title-utils.js?v=48"></script>
-    <script src="app.js?v=48"></script>
+    <script src="app.js?v=49"></script>
     <script>
         document.getElementById('custom-app-btn').addEventListener('click', () => {
             document.getElementById('custom-app-overlay').style.display = 'flex';
@@ -121,11 +121,6 @@
     <script>
         (function() {
             const overlay = document.getElementById('page-fade-overlay');
-            if (overlay) {
-                requestAnimationFrame(() => {
-                    overlay.classList.add('fade-out');
-                });
-            }
             window.navigateWithFade = function(url) {
                 if (overlay) {
                     overlay.classList.remove('fade-out');

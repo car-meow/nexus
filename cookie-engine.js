@@ -795,7 +795,6 @@ window.addEventListener('DOMContentLoaded', () => {
 function positionTutorialPopup() {
     const btn = document.getElementById('btn-nav-games');
     const popup = document.getElementById('tutorial-popup');
-    const ring = document.getElementById('tutorial-highlight-ring');
     if (!btn || !popup) return;
 
     const btnRect = btn.getBoundingClientRect();
@@ -807,12 +806,6 @@ function positionTutorialPopup() {
     popup.style.left = left + 'px';
     popup.style.top = top + 'px';
     popup.style.transform = 'translateX(-50%)';
-
-    if (ring) {
-        const pad = 6;
-        ring.style.left = (btnRect.left - pad + window.scrollX) + 'px';
-        ring.style.top = (btnRect.top - pad + window.scrollY) + 'px';
-    }
 
     drawCurvedLine();
 }
@@ -853,7 +846,6 @@ function drawCurvedLine() {
         <path d="M ${x1} ${y1} Q ${cx} ${cy} ${x2} ${y2}" 
               fill="none" 
               stroke="rgba(255, 255, 255, 0.45)" 
-              stroke-width="3" 
               stroke-linecap="round" />
     `;
 }
@@ -872,44 +864,18 @@ function startTutorial() {
         document.body.appendChild(overlay);
     }
     overlay.style.display = 'block';
+    document.body.classList.add('tutorial-active');
 
     // Highlight button
     const btn = document.getElementById('btn-nav-games');
     if (btn) {
         btn.classList.add('tutorial-highlight');
         
-        const btnRect = btn.getBoundingClientRect();
-        let ring = document.getElementById('tutorial-highlight-ring');
-        if (!ring) {
-            ring = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-            ring.id = 'tutorial-highlight-ring';
-            ring.setAttribute('class', 'tutorial-highlight-ring');
-            
-            const pad = 6;
-            const w = btnRect.width + pad * 2;
-            const h = btnRect.height + pad * 2;
-            ring.style.width = w + 'px';
-            ring.style.height = h + 'px';
-            
-            ring.innerHTML = `
-                <defs>
-                    <linearGradient id="ring-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" stop-color="#ffffff" />
-                        <stop offset="25%" stop-color="#777777" />
-                        <stop offset="50%" stop-color="#ffffff" />
-                        <stop offset="75%" stop-color="#777777" />
-                        <stop offset="100%" stop-color="#ffffff" />
-                    </linearGradient>
-                </defs>
-                <rect x="2" y="2" width="${w - 4}" height="${h - 4}" rx="16" fill="none" stroke="url(#ring-grad)" stroke-width="2" stroke-dasharray="8,6" />
-            `;
-            document.body.appendChild(ring);
-        }
-        
         const originalOnClick = btn.onclick;
         btn.onclick = (e) => {
             localStorage.setItem('tb_tutorial_played', 'true');
             btn.classList.remove('tutorial-highlight');
+            document.body.classList.remove('tutorial-active');
             if (overlay) overlay.style.display = 'none';
             
             const popup = document.getElementById('tutorial-popup');
@@ -956,6 +922,7 @@ function startTutorial() {
 
 function skipTutorial() {
     localStorage.setItem('tb_tutorial_skipped', 'true');
+    document.body.classList.remove('tutorial-active');
     const overlay = document.getElementById('tutorial-overlay');
     if (overlay) overlay.style.display = 'none';
     

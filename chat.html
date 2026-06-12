@@ -57,11 +57,6 @@
     <script>
         (function() {
             const overlay = document.getElementById('page-fade-overlay');
-            if (overlay) {
-                requestAnimationFrame(() => {
-                    overlay.classList.add('fade-out');
-                });
-            }
             window.navigateWithFade = function(url) {
                 if (overlay) {
                     overlay.classList.remove('fade-out');
@@ -581,6 +576,10 @@
                     else publish({type: 'leave', name: myName, peerId: myName});
                 }
             });
+
+            // Fade page in once chat initialization is complete
+            const overlay = document.getElementById('page-fade-overlay');
+            if (overlay) overlay.classList.add('fade-out');
         });
     </script>
 </body>

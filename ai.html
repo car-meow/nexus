@@ -81,11 +81,6 @@
     <script>
         (function() {
             const overlay = document.getElementById('page-fade-overlay');
-            if (overlay) {
-                requestAnimationFrame(() => {
-                    overlay.classList.add('fade-out');
-                });
-            }
             window.navigateWithFade = function(url) {
                 if (overlay) {
                     overlay.classList.remove('fade-out');
@@ -148,6 +143,10 @@
                 del.onclick = (e) => { e.stopPropagation(); deleteChat(chat.id); };
                 li.append(t, del); list.appendChild(li);
             });
+
+            // Fade page in once sidebar is rendered
+            const overlay = document.getElementById('page-fade-overlay');
+            if (overlay) overlay.classList.add('fade-out');
         }
 
         async function loadChat(id) {

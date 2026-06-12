@@ -563,33 +563,35 @@ body.app-is-dragging #game-list li:not(.dragging):not(.ugs-item):hover {
 
 .app-action-btn {
     opacity: 0;
-    transition: opacity 0.2s, color 0.2s, transform 0.2s;
-    font-size: 18px;
-    padding: 0 3px;
-    line-height: 1;
+    transition: opacity 0.2s, border-color 0.2s, background-color 0.2s, transform 0.2s;
     cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    border: 2.5px solid rgba(255, 255, 255, 0.92);
+    background: rgba(255, 255, 255, 0.08);
+    box-sizing: border-box;
+    margin: 0 4px;
 }
 
 li:hover .app-action-btn {
     opacity: 1;
 }
 
-.rename-btn:hover {
-    color: #81C784;
+.app-action-btn:hover {
+    background: rgba(255, 255, 255, 0.16);
     transform: scale(1.12);
 }
 
-.trash-btn {
-    font-size: 18px;
-}
-
-li:hover .trash-btn {
-    opacity: 1;
+.rename-btn:hover {
+    border-color: #81C784;
 }
 
 .trash-btn:hover {
-    color: #f44336;
-    transform: scale(1.2);
+    border-color: #ef5350;
 }
 
 .game-bookmark-btn.bookmarked {

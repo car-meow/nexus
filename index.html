@@ -324,19 +324,17 @@ body {
     z-index: 100000 !important;
 }
 
-.tutorial-highlight-ring {
-    position: absolute;
-    z-index: 99999;
-    pointer-events: none;
-    animation: rotateRing 8s linear infinite;
-    transform-origin: center;
-    opacity: 0.65;
+body.tutorial-active .home-container {
+    z-index: 100002 !important;
+}
+body.tutorial-active .material-nav-btn:not(.tutorial-highlight) {
+    pointer-events: none !important;
+    opacity: 0.3;
+}
+body.tutorial-active #nexus-logo {
+    pointer-events: none !important;
 }
 
-@keyframes rotateRing {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
-}
 
 .tutorial-popup {
     position: absolute;
@@ -520,5 +518,5 @@ body {
 
 <!-- ========== JAVASCRIPT ========== -->
 <script src="cookie-core.js?v=48"></script>
-<script src="cookie-engine.js?v=51"></script></body>
+<script src="cookie-engine.js?v=52"></script></body>
 </html>

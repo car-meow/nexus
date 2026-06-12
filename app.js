@@ -59,6 +59,10 @@ async function loadGames() {
     if (pinMasterStash()) saveGameOrder();
     renderGameList();
     openDefaultGame();
+
+    // Fade page in once list is loaded and rendered
+    const overlay = document.getElementById('page-fade-overlay');
+    if (overlay) overlay.classList.add('fade-out');
 }
 
 function openDefaultGame() {
@@ -320,7 +324,9 @@ function loadGame(game) {
     if (emergencyBtn) emergencyBtn.style.display = 'inline-flex';
     
     frame.style.setProperty('display', 'block', 'important');
-    frame.style.setProperty('visibility', 'visible', 'important');
+    frame.style.setProperty('visibility', 'hidden', 'important');
+    frame.style.opacity = '0';
+    frame.style.transition = 'opacity 0.25s ease';
     frame.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-forms allow-popups allow-modals allow-pointer-lock');
 	
     // 2. Set Status to Loading (Yellow)
@@ -339,6 +345,8 @@ function loadGame(game) {
             statusDot.style.boxShadow = '0 0 8px #4CAF50';
             statusText.textContent = 'Loaded';
         }
+        frame.style.setProperty('visibility', 'visible', 'important');
+        frame.style.opacity = '1';
     };
 
     // 4. Inject Game Content
