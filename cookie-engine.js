@@ -96,10 +96,9 @@ const splashes = [
     "Don't close the lid!", "Your progress is persistent.",
     "Chromebooks are gaming rigs.", "Click the cookie.",
     "Become a Swag Lord.", "Cookies are life.", "Baking at lightspeed.",
-    // Gaming
-    "Respawn Ready!", "Critical Hit!", "Level Up!", "GG Easy!", "Boss Incoming!",
-    "Loot Everything!", "No Scope!", "Victory Royale!", "Achievement Unlocked!",
-    "Quest Accepted!", "Combo Master!", "Extra Life!", "Save Point!", "Speedrun Time!",
+    "Respawn Ready!", "Critical Hit!", "Level Up!", "GG EZ!", "Boss Incoming!",
+    "Loot Everything!", "360 No Scope!", "#1 Victory Royale!", "Achievement Get!",
+    "Quest Accepted!", "Combo Master!", "1-up mushroom!", "Save Point!", "Speedrun Time!",
     "New Game+!", "Frag Out!", "Final Boss!", "XP Farming!", "Skill Issue!",
     "Patch Notes!", "Nerf This!", "Buff Incoming!", "Game On!", "Pixel Perfect!",
     "One More Match!", "Ranked Grind!", "Hidden Treasure!", "Checkpoint Reached!",
@@ -120,7 +119,6 @@ const splashes = [
     "Hero Selected!", "Character Created!", "Dungeon Mastered!", "Arena Champion!",
     "Ready Player!", "Insert Coin!", "Tactical Pause!", "Final Round!",
     "Battle Commencing!", "Match Point!", "Victory Achieved!", "Gaming Never Sleeps!",
-    // Silly
     "Suspicious Banana.", "Quantum Pickles!", "Bees Approved!", "Tuesday Energy!",
     "Moist Algorithms.", "Garlic Powered!", "Duck Certified!", "Bread Protocol.",
     "Cosmic Toaster!", "Microwave Wisdom.", "Slightly Chaotic!", "Frog Economics.",
