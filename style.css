@@ -413,7 +413,7 @@ main {
 }
 
 #game-list li {
-    padding: 12px;
+    padding: 10.5px 12px;
     background-color: var(--zigzag-line);
     margin-bottom: 8px;
     margin-right: 15px;
@@ -424,14 +424,14 @@ main {
     justify-content: space-between;
     align-items: center;
     transition: all 0.2s;
-    border: 1px solid transparent;
+    border: 2.5px solid rgba(255, 255, 255, 0.92);
     position: relative;
 }
 
 #game-list li:hover {
     background-color: var(--panel-bg-alt);
     transform: translateX(5px);
-    border-color: #444;
+    border-color: #ffffff;
     box-shadow: -5px 5px 5px rgba(0, 0, 0, 0.3);
 }
 
@@ -571,7 +571,7 @@ body.app-is-dragging #game-list li:not(.dragging):not(.ugs-item):hover {
     width: 30px;
     height: 30px;
     border-radius: 50%;
-    border: 2.5px solid rgba(255, 255, 255, 0.92);
+    border: 2.5px solid transparent;
     background: rgba(255, 255, 255, 0.08);
     box-sizing: border-box;
     margin: 0 4px;

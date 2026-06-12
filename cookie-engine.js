@@ -798,14 +798,14 @@ function positionTutorialPopup() {
     if (!btn || !popup) return;
 
     const btnRect = btn.getBoundingClientRect();
-    const popupHeight = popup.offsetHeight || 80;
     
-    const left = btnRect.left + (btnRect.width / 2);
-    const top = btnRect.top - popupHeight - 40 + window.scrollY;
+    // Position to the left of the Games button
+    const left = btnRect.left - popup.offsetWidth - 40 + window.scrollX;
+    const top = btnRect.top + (btnRect.height / 2) + window.scrollY;
 
     popup.style.left = left + 'px';
     popup.style.top = top + 'px';
-    popup.style.transform = 'translateX(-50%)';
+    popup.style.transform = 'translateY(-50%)';
 
     drawCurvedLine();
 }
@@ -825,7 +825,7 @@ function drawCurvedLine() {
         svg.style.left = '0';
         svg.style.width = '100%';
         svg.style.height = '100%';
-        svg.style.zIndex = '100001';
+        svg.style.zIndex = '100004';
         svg.style.pointerEvents = 'none';
         document.body.appendChild(svg);
     }
@@ -833,19 +833,21 @@ function drawCurvedLine() {
     const btnRect = btn.getBoundingClientRect();
     const popupRect = popup.getBoundingClientRect();
     
-    const x1 = popupRect.left + popupRect.width / 2 + window.scrollX;
-    const y1 = popupRect.bottom + window.scrollY;
+    // From right edge of popup to left edge of button
+    const x1 = popupRect.right + window.scrollX;
+    const y1 = popupRect.top + popupRect.height / 2 + window.scrollY;
     
-    const x2 = btnRect.left + btnRect.width / 2 + window.scrollX;
-    const y2 = btnRect.top + window.scrollY;
+    const x2 = btnRect.left + window.scrollX;
+    const y2 = btnRect.top + btnRect.height / 2 + window.scrollY;
     
-    const cx = (x1 + x2) / 2 - 25;
-    const cy = (y1 + y2) / 2;
+    const cx = (x1 + x2) / 2;
+    const cy = (y1 + y2) / 2 - 25;
     
     svg.innerHTML = `
         <path d="M ${x1} ${y1} Q ${cx} ${cy} ${x2} ${y2}" 
               fill="none" 
               stroke="rgba(255, 255, 255, 0.45)" 
+              stroke-width="3" 
               stroke-linecap="round" />
     `;
 }
